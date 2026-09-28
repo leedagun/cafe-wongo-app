@@ -31,7 +31,6 @@ exp_menu = st.sidebar.radio(
     label_visibility="collapsed",
     key="exp_radio",
 )
-
 st.sidebar.markdown("---")
 
 # 3. 보고서 섹션
