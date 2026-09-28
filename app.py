@@ -8,7 +8,7 @@ st.set_page_config(
     page_title="마케팅 자동화 프로그램", page_icon="🚀", layout="wide"
 )
 
-# 사이드바 메뉴 구성 (요청하신 메뉴명 반영)
+# 사이드바 메뉴 구성
 st.sidebar.title("📌 메뉴")
 menu_option = st.sidebar.radio(
     "메뉴 선택",
@@ -56,7 +56,6 @@ if menu_option == "✍️ 카페 원고 작성기":
     if not sheet_url:
       st.warning("⚠️ 원고 구글 시트 링크를 입력해주세요!")
     else:
-      # 기존 데이터 존재 여부 덮어쓰기 경고 체크 시뮬레이션
       st.warning(
           "⚠️ 주의: 입력할 시트의 지정된 칸에 이미 내용이 존재할 경우"
           " 덮어쓰기 됩니다."
@@ -65,7 +64,6 @@ if menu_option == "✍️ 카페 원고 작성기":
       progress_bar = st.progress(0)
       status_text = st.empty()
 
-      # 진행 상황 시뮬레이션 (20행 기준)
       total_rows = 20
       mock_results = []
       failed_rows = []
@@ -73,9 +71,8 @@ if menu_option == "✍️ 카페 원고 작성기":
       for i in range(1, total_rows + 1):
         status_text.text(f"진행 중: 총 {total_rows}행 중 {i}행 작성 중...")
         progress_bar.progress(i / total_rows)
-        time.sleep(0.05)  # 처리 속도 연출
+        time.sleep(0.05)
 
-        # 가상 데이터 생성 (실패 케이스 3, 15행 가정)
         if i in [3, 15]:
           failed_rows.append(i)
         else:
@@ -94,7 +91,6 @@ if menu_option == "✍️ 카페 원고 작성기":
       progress_bar.empty()
       status_text.empty()
 
-      # 세션에 임시 저장
       st.session_state.preview_data = pd.DataFrame(mock_results)
       st.session_state.action_type = "cafe_wongo"
       st.session_state.sheet_url = sheet_url
@@ -102,7 +98,6 @@ if menu_option == "✍️ 카페 원고 작성기":
 
       st.success("✨ 원고 생성 미리보기가 완료되었습니다. 아래 내용을 확인해주세요.")
 
-  # 미리보기 및 승인 단계 출력
   if (
       st.session_state.preview_data is not None
       and st.session_state.action_type == "cafe_wongo"
@@ -112,7 +107,6 @@ if menu_option == "✍️ 카페 원고 작성기":
         st.session_state.preview_data, use_container_width=True
     )
 
-    # 요약 지표
     success_cnt = len(edited_df[edited_df["선택"] == True])
     fail_cnt = len(st.session_state.get("failed_rows", []))
     st.info(
@@ -131,7 +125,6 @@ if menu_option == "✍️ 카페 원고 작성기":
           try:
             gc = gspread.service_account(filename="service_account.json")
             sh = gc.open_by_url(st.session_state.sheet_url)
-            # 시트 업데이트 로직 수행 영역
             st.success("🎉 성공적으로 시트에 반영되었습니다!")
             st.session_state.preview_data = None
           except Exception as e:
@@ -172,7 +165,6 @@ elif menu_option == "🔍 카페 원고 검수":
       progress_bar = st.progress(0)
       status_text = st.empty()
 
-      # 가상 검수 시뮬레이션
       for i in range(1, 11):
         status_text.text(f"원고 검수 중... ({i}/10행)")
         progress_bar.progress(i / 10)
@@ -181,7 +173,6 @@ elif menu_option == "🔍 카페 원고 검수":
       progress_bar.empty()
       status_text.empty()
 
-      # 위반 사례가 포함된 가상 데이터
       review_results = [
           {
               "선택": True,
@@ -337,7 +328,7 @@ elif menu_option == "🔗 카페 매칭·중복 검수":
       )
 
 # ---------------------------------------------------------
-# 4. 체험단 모집 화면 (수정 완료)
+# 4. 체험단 모집 화면
 # ---------------------------------------------------------
 elif menu_option == "📢 체험단 모집":
   st.title("👥 체험단 모집 관리")
@@ -346,7 +337,6 @@ elif menu_option == "📢 체험단 모집":
       " 등록합니다."
   )
 
-  # 키워드 제안 기능 추가
   with st.expander("💡 추천 키워드 제안 기능 보기"):
     st.markdown(
         "지역과 시술을 입력하면 최적의 수집 키워드 후보를 추천해 드립니다."
@@ -376,8 +366,8 @@ elif menu_option == "📢 체험단 모집":
       if st.button("✨ 이 키워드로 선택 적용"):
         st.session_state.applied_keyword = selected_kw
 
-  # 실제 검색 입력칸 (추천 키워드가 적용될 수 있도록 연동)
-  default_kw = st.session_state.get("applied_keyword", "잠실 입술필러")
+  # 검색할 키워드 입력칸 (예시 placeholder가 보이도록 수정)
+  default_kw = st.session_state.get("applied_keyword", "")
   keyword = st.text_input(
       "검색할 키워드 입력",
       value=default_kw,
@@ -410,7 +400,6 @@ elif menu_option == "📢 체험단 모집":
       progress_bar.empty()
       status_text.empty()
 
-      # 수집 결과 데이터 (병원/업체 계정 및 대행사 원고 자동 제외 로직 시뮬레이션)
       exp_results = [
           {
               "선택": True,
