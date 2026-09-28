@@ -1,4 +1,3 @@
-import anthropic
 import gspread
 import streamlit as st
 
@@ -32,7 +31,6 @@ if menu_option == "카페 원고 작성기":
         """
     )
 
-  # 본문 내에서 원고 구글 시트 링크 입력받기
   sheet_url = st.text_input(
       "원고 구글 시트 링크",
       placeholder="https://docs.google.com/spreadsheets/d/...",
@@ -63,7 +61,6 @@ elif menu_option == "카페 원고 검수":
       " 잘 작성되었는지 검수합니다."
   )
 
-  # 본문 내에서 검수용 구글 시트 링크 입력받기
   review_sheet_url = st.text_input(
       "검수할 원고 구글 시트 링크",
       placeholder="https://docs.google.com/spreadsheets/d/...",
@@ -84,7 +81,7 @@ elif menu_option == "카페 원고 검수":
           st.error(f"❌ 오류가 발생했습니다: {e}")
 
 # ---------------------------------------------------------
-# 3. 카페 계정 매칭 화면
+# 3. 카페 계정 매칭 화면 (API 키 제거 버전)
 # ---------------------------------------------------------
 elif menu_option == "카페 계정 매칭":
   st.title("🔗 카페 계정 매칭 프로그램")
@@ -98,23 +95,15 @@ elif menu_option == "카페 계정 매칭":
       placeholder="https://docs.google.com/spreadsheets/d/...",
       key="matching_sheet",
   )
-  # 카페 계정 매칭은 API Key가 필요하다고 하셔서 유지해 두었습니다.
-  matching_api_key = st.text_input(
-      "Anthropic API Key",
-      type="password",
-      placeholder="sk-ant-...",
-      key="matching_key",
-  )
 
   if st.button("🚀 계정 매칭 실행"):
-    if not matching_sheet_url or not matching_api_key:
-      st.warning("⚠️ 매칭 구글 시트 링크와 Anthropic API 키를 모두 입력해주세요!")
+    if not matching_sheet_url:
+      st.warning("⚠️ 매칭 구글 시트 링크를 입력해주세요!")
     else:
       with st.spinner("카페 계정 매칭을 진행 중입니다..."):
         try:
           gc = gspread.service_account(filename="service_account.json")
           sh = gc.open_by_url(matching_sheet_url)
-          client = anthropic.Anthropic(api_key=matching_api_key)
 
           st.success("✨ 카페 계정 매칭 작업이 완료되었습니다!")
         except Exception as e:
