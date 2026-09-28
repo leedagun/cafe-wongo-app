@@ -6,11 +6,16 @@ st.set_page_config(
     page_title="마케팅 자동화 프로그램", page_icon="🚀", layout="wide"
 )
 
-# 사이드바 메뉴 구성 (4가지 메뉴)
+# 사이드바 메뉴 구성 (이모티콘 추가 버전)
 st.sidebar.title("📌 메뉴")
 menu_option = st.sidebar.radio(
     "메뉴 선택",
-    ["카페 원고 작성기", "카페 원고 검수", "카페 계정 매칭", "체험단 모집"],
+    [
+        "✍️ 카페 원고 작성기",
+        "🔍 카페 원고 검수",
+        "🔗 카페 계정 매칭",
+        "📢 체험단 모집",
+    ],
     label_visibility="collapsed",
 )
 
