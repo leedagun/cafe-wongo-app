@@ -42,14 +42,14 @@ st.session_state.user_role = st.sidebar.selectbox(
 
 role = st.session_state.user_role
 
-# 권한별 보는 범위 안내
+# 권한별 보는 범위 안내[cite: 5]
 scope_dict = {
     "관리자": "전체 보기 (배정, 컨펌, 기준 정보 관리)",
     "지점 담당자 (유앤아이·블루비뇨기과)": "담당 지점만 (보유장비 수정, 키워드 입력)",
     "원고 작가": "배정된 원고만 (작성 및 피드백 반영)",
     "게시판 담당": "배정된 업로드 건 (업로드 완료 처리)",
     "실행사 (1곳)": "완료된 원고 및 자기가 기입한 보고서",
-    "원장님 (로컬 지점)": "해당 지점 원고만 (확인 및 수정 요청)",
+    "원장님 (로컬 지점)": "해당 지점 원고만 (확인 또는 수정 요청)",
 }
 st.sidebar.info(f"📌 **보는 범위**: {scope_dict[role]}")
 st.sidebar.markdown("---")
@@ -70,7 +70,7 @@ def menu_btn(label, target_menu):
 
 st.sidebar.markdown("📌 **메뉴 선택**")
 
-# 역할별 접근 가능 메뉴 제어 (기능 제한)
+# 역할별 접근 가능 메뉴 제어 (원장님 역할은 홈 제외[cite: 5])
 if role == "관리자":
   menu_btn("🏠 홈 (대시보드)", "🏠 홈")
   menu_btn("🏢 지점 및 장비 관리", "🏢 지점 및 장비 관리")
@@ -103,7 +103,9 @@ elif role == "실행사 (1곳)":
   menu_btn("📊 카페 작업 현황 보고서", "📊 카페 보고서")
 
 elif role == "원장님 (로컬 지점)":
-  menu_btn("🏠 홈 (대시보드)", "🏠 홈")
+  # 원장님 역할은 홈(대시보드) 메뉴를 제외하고 보고서/확인 링크 화면만 제공[cite: 5]
+  if st.session_state.menu_option == "🏠 홈":
+    st.session_state.menu_option = "📊 카페 보고서"
   menu_btn("📊 카페 작업 현황 보고서", "📊 카페 보고서")
 
 st.sidebar.markdown("---")
@@ -220,8 +222,8 @@ elif menu_option == "📊 카페 보고서":
     }])
   elif role == "원장님 (로컬 지점)":
     st.info(
-        "💡 **원장님 전용 확인 링크 화면**: 로그인 없이 확인 또는 수정 요청만"
-        " 가능합니다[cite: 5]."
+        "💡 **원장님 전용 확인 링크 화면**: 로그인 없이 해당 지점 원고에 대한"
+        " 확인 또는 수정 요청만 가능합니다[cite: 5]."
     )
     report_df = pd.DataFrame(
         [{"지점": "로컬 지점", "상태": "원장님 컨펌 대기중"}]
