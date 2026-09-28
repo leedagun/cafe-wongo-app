@@ -29,7 +29,7 @@ if menu_option in ["카페 원고 작성기", "카페 원고 검수"]:
   st.sidebar.markdown("---")
   st.sidebar.subheader("⚙️ 카페 프로그램 설정")
   sheet_url = st.sidebar.text_input(
-      "카페 원고 구글 시트 링크",
+      "원고 구글 시트 링크",
       placeholder="https://docs.google.com/spreadsheets/d/...",
   )
   api_key = st.sidebar.text_input(
@@ -41,7 +41,7 @@ elif menu_option == "카페 계정 매칭":
   st.sidebar.markdown("---")
   st.sidebar.subheader("⚙️ 카페 계정 매칭 설정")
   matching_sheet_url = st.sidebar.text_input(
-      "계정 매칭 구글 시트 링크",
+      "매칭 구글 시트 링크",
       placeholder="https://docs.google.com/spreadsheets/d/...",
   )
   api_key = st.sidebar.text_input(
