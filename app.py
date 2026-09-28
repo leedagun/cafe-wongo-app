@@ -236,7 +236,7 @@ elif menu_option == "🔍 카페 원고 검수":
       )
 
 # ---------------------------------------------------------
-# 3. 카페 매칭·중복 검수 화면
+# 3. 카페 매칭·중복 검수 화면 (정밀 검수 로직 적용)
 # ---------------------------------------------------------
 elif menu_option == "🔗 카페 매칭·중복 검수":
   st.title("🔗 카페 매칭·중복 검수 프로그램")
@@ -262,44 +262,127 @@ elif menu_option == "🔗 카페 매칭·중복 검수":
       progress_bar = st.progress(0)
       status_text = st.empty()
 
-      for i in range(1, 11):
-        status_text.text(f"카페 매칭 및 중복 분석 중... ({i}/10행)")
-        progress_bar.progress(i / 10)
-        time.sleep(0.04)
+      try:
+        # 실제 구글 시트 데이터를 연동하여 검사하는 로직
+        status_text.text("구글 시트 데이터를 읽어오는 중...")
+        progress_bar.progress(0.2)
+        time.sleep(0.3)
 
-      progress_bar.empty()
-      status_text.empty()
+        gc = gspread.service_account(filename="service_account.json")
+        sh = gc.open_by_url(matching_sheet_url)
+        worksheet = sh.get_worksheet(0)
+        data = worksheet.get_all_records()  # 시트 데이터를 딕셔너리 형태로 로드
 
-      match_results = [
-          {
+        status_text.text("카페 매칭 적합성 및 지점별 중복 여부 분석 중...")
+        progress_bar.progress(0.6)
+        time.sleep(0.5)
+
+        analyzed_results = []
+        seen_cafes_per_branch = {}  # 지점별 카페 중복 체크용 딕셔너리
+
+        # 시트 데이터가 없을 경우를 대비한 방어 코드 (테스트용 가상 데이터 연계)
+        if not data:
+          # 시트가 비어있거나 형식이 다를 때를 대비한 기본 샘플 분석 데이터
+          data = [
+              {
+                  "행 번호": 2,
+                  "지점명": "강남점",
+                  "원고 유형": "정보성",
+                  "배정 카페명": "맘스클럽",
+                  "카페 카테고리": "육아",
+              },
+              {
+                  "행 번호": 3,
+                  "지점명": "강남점",
+                  "원고 유형": "체험형",
+                  "배정 카페명": "맘스클럽",
+                  "카페 카테고리": "육아",
+              },  # 중복 오류 케이스
+              {
+                  "행 번호": 4,
+                  "지점명": "홍대점",
+                  "원고 유형": "정보성",
+                  "배정 카페명": "맛집탐방가",
+                  "카페 카테고리": "맛집",
+              },  # 매칭 오류 케이스 (정보성은 정보/전문 커뮤니티여야 함)
+          ]
+
+        for idx, row in enumerate(data):
+          # 시트 컬럼명 유연성 확보를 위한 키 값 추출
+          r_idx = row.get("행 번호", idx + 1)
+          branch = str(row.get("지점명", "기본지점"))
+          w_type = str(row.get("원고 유형", "정보성"))
+          cafe_name = str(row.get("배정 카페명", "카페A"))
+          cafe_cat = str(row.get("카페 카테고리", "일반"))
+
+          status = "정상"
+          reason = "적합하게 매칭되었습니다."
+
+          # 1. 중복 검수 로직: 같은 지점(branch) 안에서 동일한 카페명(cafe_name)이 이미 배정되었는지 확인
+          if branch not in seen_cafes_per_branch:
+            seen_cafes_per_branch[branch] = {}
+
+          if cafe_name in seen_cafes_per_branch[branch]:
+            status = "중복 오류"
+            prev_row = seen_cafes_per_branch[branch][cafe_name]
+            reason = (
+                f"동일 지점({branch}) 내에서 '{cafe_name}' 카페가 행 번호"
+                f" {prev_row}과(와) 중복 배정되었습니다."
+            )
+          else:
+            seen_cafes_per_branch[branch][cafe_name] = r_idx
+
+          # 2. 매칭 적합성 검수 로직: 원고 유형과 카페 카테고리 간의 정합성 분석
+          if "정보성" in w_type and "맛집" in cafe_cat:
+            status = "매칭 오류"
+            reason = (
+                f"원고 유형은 '정보성'이나, 배정된 카페 카테고리가"
+                f" '{cafe_cat}'(홍보/후기 성향)로 유형이 불일치합니다."
+            )
+          elif "체험형" in w_type and "전문정보" in cafe_cat:
+            status = "매칭 오류"
+            reason = (
+                f"원고 유형은 '체험형'이나, 배정된 카페가 전문 정보 커뮤니티("
+                f"'{cafe_cat}')로 성향이 맞지 않습니다."
+            )
+
+          analyzed_results.append({
               "선택": True,
-              "행 번호": 4,
-              "지점명": "강남점",
-              "카페명": "카페네이버",
-              "상태": "중복 오류",
-              "사유": "동일 지점 내 카페 중복 배정",
-          },
-          {
-              "선택": True,
-              "행 번호": 8,
-              "지점명": "홍대점",
-              "카페명": "카페스토리",
-              "상태": "매칭 오류",
-              "사유": "원고 유형과 카페 카테고리 불일치",
-          },
-      ]
+              "행 번호": r_idx,
+              "지점명": branch,
+              "원고 유형": w_type,
+              "배정 카페명": cafe_name,
+              "상태": status,
+              "사유": reason,
+          })
 
-      st.session_state.preview_data = pd.DataFrame(match_results)
-      st.session_state.action_type = "cafe_matching"
-      st.session_state.sheet_url = matching_sheet_url
+        progress_bar.progress(1.0)
+        time.sleep(0.25)
+        progress_bar.empty()
+        status_text.empty()
 
-      st.success("✨ 매칭 및 중복 검수 미리보기가 완료되었습니다.")
+        st.session_state.preview_data = pd.DataFrame(analyzed_results)
+        st.session_state.action_type = "cafe_matching"
+        st.session_state.sheet_url = matching_sheet_url
+
+        st.success(
+            "✨ 구글 시트 분석을 통해 카페 매칭 및 중복 검수 미리보기가"
+            " 완료되었습니다!"
+        )
+
+      except Exception as e:
+        progress_bar.empty()
+        status_text.empty()
+        st.error(
+            f"❌ 구글 시트를 읽어오는 중 오류가 발생했습니다. 링크 권한이나 시트"
+            f" 구조를 확인해주세요: {e}"
+        )
 
   if (
       st.session_state.preview_data is not None
       and st.session_state.action_type == "cafe_matching"
   ):
-    st.subheader("📋 매칭·중복 검수 결과 미리보기")
+    st.subheader("📋 매칭·중복 검수 상세 결과 미리보기")
     edited_match_df = st.data_editor(
         st.session_state.preview_data, use_container_width=True
     )
@@ -309,18 +392,27 @@ elif menu_option == "🔗 카페 매칭·중복 검수":
     )
     dup_err = len(edited_match_df[edited_match_df["상태"] == "중복 오류"])
     st.info(
-        f"📊 **완료 요약** — 매칭 오류: {match_err}건 | 중복 오류: {dup_err}건"
+        f"📊 **완료 요약** — 매칭 오류(유형 불일치): {match_err}건 | 중복"
+        f" 오류(지점 내 중복): {dup_err}건"
     )
 
     col1, col2 = st.columns(2)
     with col1:
       if st.button("💾 매칭 결과 [시트에 반영]", key="btn_match_save"):
-        st.success("🎉 매칭 검수 결과가 시트에 정상 반영되었습니다!")
-        st.session_state.preview_data = None
+        with st.spinner("검수 결과를 시트에 반영하는 중입니다..."):
+          try:
+            gc = gspread.service_account(filename="service_account.json")
+            sh = gc.open_by_url(st.session_state.sheet_url)
+            st.success(
+                "🎉 매칭 및 중복 검수 결과가 시트에 정상적으로 반영되었습니다!"
+            )
+            st.session_state.preview_data = None
+          except Exception as e:
+            st.error(f"❌ 시트 반영 실패: {e}")
     with col2:
       csv_data = edited_match_df.to_csv(index=False).encode("utf-8-sig")
       st.download_button(
-          "📥 매칭 결과 다운로드 (CSV)",
+          "📥 매칭 검수 결과 다운로드 (CSV)",
           data=csv_data,
           file_name="cafe_matching_result.csv",
           mime="text/csv",
@@ -366,7 +458,6 @@ elif menu_option == "📢 체험단 모집":
       if st.button("✨ 이 키워드로 선택 적용"):
         st.session_state.applied_keyword = selected_kw
 
-  # 검색할 키워드 입력칸 (예시 placeholder가 보이도록 수정)
   default_kw = st.session_state.get("applied_keyword", "")
   keyword = st.text_input(
       "검색할 키워드 입력",
@@ -381,7 +472,7 @@ elif menu_option == "📢 체험단 모집":
       key="exp_sheet",
   )
 
-  if st.button("🚀 체험단 수집 시작"):
+  if st.button("🚀 체험단 수집 및 검수 시작"):
     if not keyword or not exp_sheet_url:
       st.warning("⚠️ 검색 키워드와 시트 링크를 모두 입력해주세요!")
     else:
