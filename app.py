@@ -27,9 +27,9 @@ api_key = ""
 # 1. 카페 원고 작성기 & 카페 원고 검수 선택 시
 if menu_option in ["카페 원고 작성기", "카페 원고 검수"]:
   st.sidebar.markdown("---")
-  st.sidebar.subheader("⚙️ 카페 프로그램 공통 설정")
+  st.sidebar.subheader("⚙️ 카페 프로그램 설정")
   sheet_url = st.sidebar.text_input(
-      "구글 시트 링크",
+      "카페 원고 구글 시트 링크",
       placeholder="https://docs.google.com/spreadsheets/d/...",
   )
   api_key = st.sidebar.text_input(
