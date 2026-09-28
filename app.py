@@ -8,73 +8,103 @@ st.set_page_config(
     page_title="마케팅 자동화 프로그램", page_icon="🚀", layout="wide"
 )
 
-# 사이드바 메뉴 구성 (요청하신 섹션형 레이아웃)
+# 세션 스테이트 초기화 (선택된 메뉴 유지용)
+if "menu_option" not in st.session_state:
+  st.session_state.menu_option = "✍️ 카페 원고 작성기"
+if "preview_data" not in st.session_state:
+  st.session_state.preview_data = None
+if "action_type" not in st.session_state:
+  st.session_state.action_type = None
+
+
+def set_menu(menu_name):
+  st.session_state.menu_option = menu_name
+  # 메뉴를 바꿀 때 기존 데이터 미리보기 초기화 (선택사항)
+  # st.session_state.preview_data = None
+
+
+# 사이드바 메뉴 구성 (요청하신 소제목 레이아웃 + 단일 선택 보장)
 st.sidebar.title("📌 메뉴")
 st.sidebar.markdown("---")
 
 # 1. 카페 섹션
 st.sidebar.markdown("☕ **카페**")
-cafe_menu = st.sidebar.radio(
-    "카페 메뉴 선택",
-    ["✍️ 카페 원고 작성기", "🔍 카페 원고 검수", "🔗 카페 매칭·중복 검수"],
-    label_visibility="collapsed",
-    key="cafe_radio",
-)
+if st.sidebar.button(
+    "✍️ 카페 원고 작성기",
+    use_container_width=True,
+    type=(
+        "primary"
+        if st.session_state.menu_option == "✍️ 카페 원고 작성기"
+        else "secondary"
+    ),
+):
+  set_menu("✍️ 카페 원고 작성기")
+if st.sidebar.button(
+    "🔍 카페 원고 검수",
+    use_container_width=True,
+    type=(
+        "primary"
+        if st.session_state.menu_option == "🔍 카페 원고 검수"
+        else "secondary"
+    ),
+):
+  set_menu("🔍 카페 원고 검수")
+if st.sidebar.button(
+    "🔗 카페 매칭·중복 검수",
+    use_container_width=True,
+    type=(
+        "primary"
+        if st.session_state.menu_option == "🔗 카페 매칭·중복 검수"
+        else "secondary"
+    ),
+):
+  set_menu("🔗 카페 매칭·중복 검수")
 
 st.sidebar.markdown("---")
 
 # 2. 체험단 섹션
 st.sidebar.markdown("👥 **체험단**")
-exp_menu = st.sidebar.radio(
-    "체험단 메뉴 선택",
-    ["📢 체험단 모집"],
-    label_visibility="collapsed",
-    key="exp_radio",
-)
+if st.sidebar.button(
+    "📢 체험단 모집",
+    use_container_width=True,
+    type=(
+        "primary"
+        if st.session_state.menu_option == "📢 체험단 모집"
+        else "secondary"
+    ),
+):
+  set_menu("📢 체험단 모집")
+
 st.sidebar.markdown("---")
 
 # 3. 보고서 섹션
 st.sidebar.markdown("📚 **보고서**")
-report_menu = st.sidebar.radio(
-    "보고서 메뉴 선택",
-    ["📊 카페 보고서", "📈 체험단 보고서"],
-    label_visibility="collapsed",
-    key="report_radio",
-)
+if st.sidebar.button(
+    "📊 카페 보고서",
+    use_container_width=True,
+    type=(
+        "primary"
+        if st.session_state.menu_option == "📊 카페 보고서"
+        else "secondary"
+    ),
+):
+  set_menu("📊 카페 보고서")
+if st.sidebar.button(
+    "📈 체험단 보고서",
+    use_container_width=True,
+    type=(
+        "primary"
+        if st.session_state.menu_option == "📈 체험단 보고서"
+        else "secondary"
+    ),
+):
+  set_menu("📈 체험단 보고서")
 
 st.sidebar.markdown("---")
+st.sidebar.caption("💡 원하는 메뉴를 선택하여 작업을 진행하세요.")
 
-# 어떤 섹션의 메뉴를 가장 최근에 클릭했는지 판별하여 하나의 메뉴로 통합
-# (사용자가 다른 섹션을 누르면 다른 섹션은 직전 선택이 유지되므로, 세션 상태로 최근 클릭 추적)
-if "last_active_menu" not in st.session_state:
-  st.session_state.last_active_menu = "✍️ 카페 원고 작성기"
-
-# 라디오 버튼 상태 변화 감지를 위한 세션 관리
-if "prev_cafe" not in st.session_state:
-  st.session_state.prev_cafe = cafe_menu
-if "prev_exp" not in st.session_state:
-  st.session_state.prev_exp = exp_menu
-if "prev_report" not in st.session_state:
-  st.session_state.prev_report = report_menu
-
-if cafe_menu != st.session_state.prev_cafe:
-  st.session_state.last_active_menu = cafe_menu
-  st.session_state.prev_cafe = cafe_menu
-elif exp_menu != st.session_state.prev_exp:
-  st.session_state.last_active_menu = exp_menu
-  st.session_state.prev_exp = exp_menu
-elif report_menu != st.session_state.prev_report:
-  st.session_state.last_active_menu = report_menu
-  st.session_state.prev_report = report_menu
-
-menu_option = st.session_state.last_active_menu
-
-
-# 세션 스테이트 초기화 (미리보기 및 데이터 유지용)
-if "preview_data" not in st.session_state:
-  st.session_state.preview_data = None
-if "action_type" not in st.session_state:
-  st.session_state.action_type = None
+# 현재 선택된 메뉴 가져오기
+menu_option = st.session_state.menu_option
 
 
 # ---------------------------------------------------------
