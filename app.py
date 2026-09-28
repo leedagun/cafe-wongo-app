@@ -9,7 +9,7 @@ st.set_page_config(
 )
 
 # 사이드바 통합 메뉴 구성 (오직 하나만 선택되도록 단일화)
-st.sidebar.title("📌 통합 메뉴")
+st.sidebar.title("📌 메뉴")
 
 menu_option = st.sidebar.radio(
     "메뉴 선택",
