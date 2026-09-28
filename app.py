@@ -8,18 +8,18 @@ st.set_page_config(
     page_title="마케팅 자동화 프로그램", page_icon="🚀", layout="wide"
 )
 
-# 사이드바 메뉴 구성 (카페, 체험단, 보고서 그룹화)
+# 사이드바 메뉴 구성 (카페, 체험단, 보고서 3개 분야로 분리)
 st.sidebar.title("📌 메뉴")
 menu_option = st.sidebar.radio(
     "메뉴 선택",
     [
-        # 카페 그룹
+        # 카페 분야
         "✍️ 카페 원고 작성기",
         "🔍 카페 원고 검수",
         "🔗 카페 매칭·중복 검수",
-        # 체험단 그룹
+        # 체험단 분야
         "📢 체험단 모집",
-        # 보고서 그룹
+        # 보고서 분야
         "📊 카페 보고서",
         "📈 체험단 보고서",
     ],
@@ -364,18 +364,12 @@ elif menu_option == "🔗 카페 매칭·중복 검수":
         st.session_state.action_type = "cafe_matching"
         st.session_state.sheet_url = matching_sheet_url
 
-        st.success(
-            "✨ 구글 시트 분석을 통해 카페 매칭 및 중복 검수 미리보기가"
-            " 완료되었습니다!"
-        )
+        st.success("✨ 카페 매칭 및 중복 검수 분석이 완료되었습니다!")
 
       except Exception as e:
         progress_bar.empty()
         status_text.empty()
-        st.error(
-            f"❌ 구글 시트를 읽어오는 중 오류가 발생했습니다. 링크 권한이나 시트"
-            f" 구조를 확인해주세요: {e}"
-        )
+        st.error(f"❌ 구글 시트를 읽어오는 중 오류가 발생했습니다: {e}")
 
   if (
       st.session_state.preview_data is not None
@@ -391,8 +385,7 @@ elif menu_option == "🔗 카페 매칭·중복 검수":
     )
     dup_err = len(edited_match_df[edited_match_df["상태"] == "중복 오류"])
     st.info(
-        f"📊 **완료 요약** — 매칭 오류(유형 불일치): {match_err}건 | 중복"
-        f" 오류(지점 내 중복): {dup_err}건"
+        f"📊 **완료 요약** — 매칭 오류: {match_err}건 | 중복 오류: {dup_err}건"
     )
 
     col1, col2 = st.columns(2)
@@ -402,9 +395,7 @@ elif menu_option == "🔗 카페 매칭·중복 검수":
           try:
             gc = gspread.service_account(filename="service_account.json")
             sh = gc.open_by_url(st.session_state.sheet_url)
-            st.success(
-                "🎉 매칭 및 중복 검수 결과가 시트에 정상적으로 반영되었습니다!"
-            )
+            st.success("🎉 매칭 및 중복 검수 결과가 시트에 정상 반영되었습니다!")
             st.session_state.preview_data = None
           except Exception as e:
             st.error(f"❌ 시트 반영 실패: {e}")
@@ -559,57 +550,50 @@ elif menu_option == "📢 체험단 모집":
 # 5. 카페 보고서 화면
 # ---------------------------------------------------------
 elif menu_option == "📊 카페 보고서":
-  st.title("📊 카페 마케팅 종합 보고서")
+  st.title("📊 카페 작업 현황 보고서")
   st.markdown(
-      "지금까지 진행된 카페 원고 작성, 검수, 매칭 및 중복 검수 이력과"
-      " 통계치를 통합 조회합니다."
+      "지금까지 진행된 카페 원고 작성, 검수, 매칭·중복 검수 통합 작업 결과를"
+      " 요약하고 보고서 형태로 확인합니다."
   )
 
   st.info(
-      "💡 최근 수행된 카페 마케팅 작업들의 결과 요약 데이터를 한눈에"
-      " 확인하실 수 있습니다."
+      "💡 카페 마케팅 전체 작업 지표 요약 (작성 완료 건수, 검수 위반 건수,"
+      " 매칭 오류 등)"
   )
 
-  # 가상의 카페 통계 메트릭 지표
-  col1, col2, col3, col4 = st.columns(4)
-  col1.metric("총 원고 생성 건수", "120건", "+15건")
-  col2.metric("원고 검수 위반율", "4.2%", "-1.1%")
-  col3.metric("매칭 오류 건수", "2건", "지점별 점검 필요")
-  col4.metric("중복 배정 차단", "5건", "정상 차단됨")
+  # 가상 보고서 지표 대시보드 표시
+  col1, col2, col3 = st.columns(3)
+  col1.metric("총 원고 작성", "120건", "+15건")
+  col2.metric("원고 검수 위반", "4건", "-2건")
+  col3.metric("매칭/중복 오류", "1건", "-1건")
 
-  st.markdown("---")
-  st.subheader("📋 최근 카페 작업 상세 이력 리포트")
-
-  # 가상 이력 테이블 데이터
-  report_data = pd.DataFrame([
+  st.subheader("📋 카페 작업 상세 내역")
+  report_cafe_df = pd.DataFrame([
       {
-          "날짜": "2026-03-30",
+          "날짜": "2026-06-07",
           "작업 구분": "원고 작성",
-          "담당 지점": "강남점 외 3개",
-          "처리 결과": "성공 20건 / 실패 0건",
           "상태": "완료",
+          "비고": "정상 처리",
       },
       {
-          "날짜": "2026-03-29",
-          "작업 구분": "매칭·중복 검수",
-          "담당 지점": "홍대점",
-          "처리 결과": "매칭 오류 1건 발견",
-          "상태": "조치 필요",
-      },
-      {
-          "날짜": "2026-03-28",
+          "날짜": "2026-06-07",
           "작업 구분": "원고 검수",
-          "담당 지점": "잠실점",
-          "처리 결과": "위반 2건 수정 완료",
-          "상태": "완료",
+          "상태": "위반 발견",
+          "비고": "홍보성 문구 수정 필요",
+      },
+      {
+          "날짜": "2026-06-07",
+          "작업 구분": "매칭·중복 검수",
+          "상태": "오류 발견",
+          "비고": "지점 내 카페 중복 배정",
       },
   ])
-  st.dataframe(report_data, use_container_width=True)
+  st.dataframe(report_cafe_df, use_container_width=True)
 
-  report_csv = report_data.to_csv(index=False).encode("utf-8-sig")
+  csv_cafe_report = report_cafe_df.to_csv(index=False).encode("utf-8-sig")
   st.download_button(
       "📥 카페 종합 보고서 다운로드 (CSV)",
-      data=report_csv,
+      data=csv_cafe_report,
       file_name="cafe_comprehensive_report.csv",
       mime="text/csv",
   )
@@ -618,49 +602,40 @@ elif menu_option == "📊 카페 보고서":
 # 6. 체험단 보고서 화면
 # ---------------------------------------------------------
 elif menu_option == "📈 체험단 보고서":
-  st.title("📈 체험단 모집 종합 보고서")
+  st.title("📈 체험단 모집 현황 보고서")
   st.markdown(
-      "키워드별 블로거 수집 현황, 병원·대행사 자동 제외 이력 및 최종 등록"
-      " 인원을 통합 조회합니다."
+      "키워드별 블로거 수집 현황 및 개인 블로거 최종 등록 결과를 종합하여"
+      " 보고서로 제공합니다."
   )
 
-  st.info(
-      "💡 체험단 모집 캠페인의 성과 지표와 제외된 계정 비율을 확인할 수 있는"
-      " 공간입니다."
-  )
+  st.info("💡 체험단 모집 및 필터링(병원·업체/대행사 제외) 성과 요약")
 
-  # 가상의 체험단 통계 메트릭 지표
   col1, col2, col3 = st.columns(3)
-  col1.metric("총 블로거 수집", "340명", "+45명")
-  col2.metric("자동 제외된 업체/대행사", "68명", "클린 지수 높음")
-  col3.metric("최종 체험단 등록률", "80%", "우수함")
+  col1.metric("총 수집 블로거", "350명", "+45명")
+  col2.metric("자동 제외 (업체/대행사)", "120명", "+10명")
+  col3.metric("최종 등록 완료", "230명", "+35명")
 
-  st.markdown("---")
-  st.subheader("📋 키워드별 체험단 수집 및 필터링 리포트")
-
-  # 가상 체험단 리포트 데이터
-  exp_report_data = pd.DataFrame([
+  st.subheader("📋 체험단 모집 상세 내역")
+  report_exp_df = pd.DataFrame([
       {
-          "수집 일자": "2026-03-30",
-          "검색 키워드": "잠실 입술필러",
+          "키워드": "잠실 입술필러",
           "수집 인원": "50명",
-          "자동 제외(병원/대행사)": "12명",
-          "최종 등록": "38명",
+          "제외 인원": "18명",
+          "최종 등록": "32명",
       },
       {
-          "수집 일자": "2026-03-27",
-          "검색 키워드": "강남 피부과",
+          "키워드": "강남 피부과",
           "수집 인원": "120명",
-          "자동 제외(병원/대행사)": "30명",
-          "최종 등록": "90명",
+          "제외 인원": "45명",
+          "최종 등록": "75명",
       },
   ])
-  st.dataframe(exp_report_data, use_container_width=True)
+  st.dataframe(report_exp_df, use_container_width=True)
 
-  exp_report_csv = exp_report_data.to_csv(index=False).encode("utf-8-sig")
+  csv_exp_report = report_exp_df.to_csv(index=False).encode("utf-8-sig")
   st.download_button(
       "📥 체험단 종합 보고서 다운로드 (CSV)",
-      data=exp_report_csv,
+      data=csv_exp_report,
       file_name="experience_comprehensive_report.csv",
       mime="text/csv",
   )
