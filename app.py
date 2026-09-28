@@ -16,89 +16,34 @@ if "preview_data" not in st.session_state:
 if "action_type" not in st.session_state:
   st.session_state.action_type = None
 
-
-def set_menu(menu_name):
-  st.session_state.menu_option = menu_name
-  # 메뉴를 바꿀 때 기존 데이터 미리보기 초기화 (선택사항)
-  # st.session_state.preview_data = None
-
-
 # 사이드바 메뉴 구성 (요청하신 소제목 레이아웃 + 단일 선택 보장)
 st.sidebar.title("📌 메뉴")
 st.sidebar.markdown("---")
 
 # 1. 카페 섹션
 st.sidebar.markdown("☕ **카페**")
-if st.sidebar.button(
-    "✍️ 카페 원고 작성기",
-    use_container_width=True,
-    type=(
-        "primary"
-        if st.session_state.menu_option == "✍️ 카페 원고 작성기"
-        else "secondary"
-    ),
-):
-  set_menu("✍️ 카페 원고 작성기")
-if st.sidebar.button(
-    "🔍 카페 원고 검수",
-    use_container_width=True,
-    type=(
-        "primary"
-        if st.session_state.menu_option == "🔍 카페 원고 검수"
-        else "secondary"
-    ),
-):
-  set_menu("🔍 카페 원고 검수")
-if st.sidebar.button(
-    "🔗 카페 매칭·중복 검수",
-    use_container_width=True,
-    type=(
-        "primary"
-        if st.session_state.menu_option == "🔗 카페 매칭·중복 검수"
-        else "secondary"
-    ),
-):
-  set_menu("🔗 카페 매칭·중복 검수")
+if st.sidebar.button("✍️ 카페 원고 작성기", use_container_width=True):
+  st.session_state.menu_option = "✍️ 카페 원고 작성기"
+if st.sidebar.button("🔍 카페 원고 검수", use_container_width=True):
+  st.session_state.menu_option = "🔍 카페 원고 검수"
+if st.sidebar.button("🔗 카페 매칭·중복 검수", use_container_width=True):
+  st.session_state.menu_option = "🔗 카페 매칭·중복 검수"
 
 st.sidebar.markdown("---")
 
 # 2. 체험단 섹션
 st.sidebar.markdown("👥 **체험단**")
-if st.sidebar.button(
-    "📢 체험단 모집",
-    use_container_width=True,
-    type=(
-        "primary"
-        if st.session_state.menu_option == "📢 체험단 모집"
-        else "secondary"
-    ),
-):
-  set_menu("📢 체험단 모집")
+if st.sidebar.button("📢 체험단 모집", use_container_width=True):
+  st.session_state.menu_option = "📢 체험단 모집"
 
 st.sidebar.markdown("---")
 
 # 3. 보고서 섹션
 st.sidebar.markdown("📚 **보고서**")
-if st.sidebar.button(
-    "📊 카페 보고서",
-    use_container_width=True,
-    type=(
-        "primary"
-        if st.session_state.menu_option == "📊 카페 보고서"
-        else "secondary"
-    ),
-):
-  set_menu("📊 카페 보고서")
-if st.sidebar.button(
-    "📈 체험단 보고서",
-    use_container_width=True,
-    type=(
-        "primary"
-        if st.session_state.menu_option == "📈 체험단 보고서"
-        else "secondary"
-    ),
-):
-  set_menu("📈 체험단 보고서")
+if st.sidebar.button("📊 카페 보고서", use_container_width=True):
+  st.session_state.menu_option = "📊 카페 보고서"
+if st.sidebar.button("📈 체험단 보고서", use_container_width=True):
+  st.session_state.menu_option = "📈 체험단 보고서"
 
 st.sidebar.markdown("---")
 st.sidebar.caption("💡 원하는 메뉴를 선택하여 작업을 진행하세요.")
