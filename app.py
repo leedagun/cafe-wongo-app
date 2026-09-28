@@ -24,7 +24,7 @@ api_key = ""
 # ---------------------------------------------------------
 if menu_option in ["카페 원고 작성기", "카페 원고 검수"]:
   st.sidebar.markdown("---")
-  st.sidebar.subheader("⚙️ 카페 프로그램 공통 설정")
+  st.sidebar.subheader("⚙️ 카페 공통 설정")
   sheet_url = st.sidebar.text_input(
       "구글 시트 링크",
       placeholder="https://docs.google.com/spreadsheets/d/...",
@@ -39,18 +39,15 @@ if menu_option in ["카페 원고 작성기", "카페 원고 검수"]:
 if menu_option == "카페 원고 작성기":
   st.title("📝 네이버 카페 원고 자동 생성")
   st.markdown(
-      "구글 시트의 데이터를 읽어와 클로드가 1~20번 원고(정보성/후기성/슈퍼세트)를"
+      "구글 시트 연동 후 원고를"
       " 자동으로 작성합니다."
   )
 
-  with st.expander("ℹ️ 카페 시트 가이드 보기"):
+  with st.expander("ℹ️ 카페 원고 프로그램 사용 가이드 보기"):
     st.markdown(
         """
-        - **1~10번:** 정보성 글 (전문적인 톤)
-        - **11~19번:** 체험 공유형 글 (친근한 일상 대화 톤)
-        - **20번:** 종합 패키지형 글 (본문 400~500자 이내)
-        - G열(제목), H열(본문), I~N열(댓글/대댓글 3세트)에 자동 입력됩니다.
-        """
+        - **구글 시트 링크 확인
+        - **작성할 지점 확인
     )
 
   if st.button("🚀 카페 원고 생성 및 시트 입력 시작"):
