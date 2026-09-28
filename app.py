@@ -8,24 +8,34 @@ st.set_page_config(
     page_title="마케팅 자동화 프로그램", page_icon="🚀", layout="wide"
 )
 
-# 사이드바 통합 메뉴 구성 (오직 하나만 선택되도록 단일화)
-st.sidebar.title("📌 메뉴")
+# 사이드바 메뉴 구성 (소제목과 단일 선택 라디오 활용)
+st.sidebar.title("📌 통합 대시보드")
+
+st.sidebar.markdown("---")
+st.sidebar.markdown("**☕ 카페**")
+cafe_options = [
+    "✍️ 카페 원고 작성기",
+    "🔍 카페 원고 검수",
+    "🔗 카페 매칭·중복 검수",
+]
+
+st.sidebar.markdown("**👥 체험단**")
+exp_options = ["📢 체험단 모집"]
+
+st.sidebar.markdown("**📊 보고서**")
+report_options = ["📊 카페 보고서", "📈 체험단 보고서"]
+
+# 전체 메뉴를 하나로 합쳐서 단일 선택 보장
+all_menus = cafe_options + exp_options + report_options
 
 menu_option = st.sidebar.radio(
     "메뉴 선택",
-    [
-        # 카페 분야
-        "✍️ 카페 원고 작성기",
-        "🔍 카페 원고 검수",
-        "🔗 카페 매칭·중복 검수",
-        # 체험단 분야
-        "📢 체험단 모집",
-        # 보고서 분야
-        "📊 카페 보고서",
-        "📈 체험단 보고서",
-    ],
+    all_menus,
     label_visibility="collapsed",
 )
+
+st.sidebar.markdown("---")
+st.sidebar.caption("💡 상단 메뉴에서 원하는 작업을 선택하세요.")
 
 
 # 세션 스테이트 초기화 (미리보기 및 데이터 유지용)
