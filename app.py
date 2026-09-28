@@ -391,7 +391,7 @@ elif menu_option == "📢 체험단 모집":
       key="exp_sheet",
   )
 
-  if st.button("🚀 체험단 수집 및 검수 시작"):
+  if st.button("🚀 체험단 수집 시작"):
     if not keyword or not exp_sheet_url:
       st.warning("⚠️ 검색 키워드와 시트 링크를 모두 입력해주세요!")
     else:
