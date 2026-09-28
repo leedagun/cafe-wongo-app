@@ -7,7 +7,7 @@ st.set_page_config(
     page_title="마케팅 자동화 프로그램", page_icon="🚀", layout="wide"
 )
 
-# 사이드바 메뉴 구성 (요청하신 3가지 메뉴)
+# 사이드바 메뉴 구성
 st.sidebar.title("📌 메뉴")
 menu_option = st.sidebar.radio(
     "메뉴 선택",
@@ -15,15 +15,23 @@ menu_option = st.sidebar.radio(
     label_visibility="collapsed",
 )
 
-st.sidebar.markdown("---")
-st.sidebar.subheader("⚙️ 공통 설정")
-sheet_url = st.sidebar.text_input(
-    "구글 시트 링크",
-    placeholder="https://docs.google.com/spreadsheets/d/...",
-)
-api_key = st.sidebar.text_input(
-    "Anthropic API Key", type="password", placeholder="sk-ant-..."
-)
+# 변수 미리 선언
+sheet_url = ""
+api_key = ""
+
+# ---------------------------------------------------------
+# [중요] 카페 메뉴를 선택했을 때만 사이드바에 설정창이 나타나도록 설정
+# ---------------------------------------------------------
+if menu_option in ["카페 원고 작성기", "카페 원고 검수"]:
+  st.sidebar.markdown("---")
+  st.sidebar.subheader("⚙️ 카페 프로그램 공통 설정")
+  sheet_url = st.sidebar.text_input(
+      "구글 시트 링크",
+      placeholder="https://docs.google.com/spreadsheets/d/...",
+  )
+  api_key = st.sidebar.text_input(
+      "Anthropic API Key", type="password", placeholder="sk-ant-..."
+  )
 
 # ---------------------------------------------------------
 # 1. 카페 원고 작성기 화면
@@ -77,7 +85,7 @@ elif menu_option == "카페 원고 검수":
       st.success("✨ 원고 검수가 완료되었습니다!")
 
 # ---------------------------------------------------------
-# 3. 체험단 모집 화면
+# 3. 체험단 모집 화면 (공통 설정 아예 없음)
 # ---------------------------------------------------------
 elif menu_option == "체험단 모집":
   st.title("👥 체험단 모집 관리")
@@ -85,8 +93,9 @@ elif menu_option == "체험단 모집":
       "체험단 신청자 명단을 관리하고 선정 가이드를 생성하는 공간입니다."
   )
 
+  st.info(
+      "💡 체험단 모집 프로그램 사용을 위해 검색할 키워드를 입력해주세요"
+  )
+
   if st.button("🚀 체험단 프로그램 실행"):
-    if not sheet_url or not api_key:
-      st.warning("⚠️ 구글 시트 링크와 Anthropic API 키를 모두 입력해주세요!")
-    else:
-      st.success("✨ 체험단 프로그램이 실행되었습니다!")
+    st.success("✨ 체험단 프로그램이 실행되었습니다!")
