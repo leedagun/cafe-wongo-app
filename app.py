@@ -27,16 +27,6 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("**📊 보고서**")
 report_options = ["📊 카페 보고서", "📈 체험단 보고서"]
 
-# 전체 메뉴를 하나로 합쳐서 단일 선택 보장
-all_menus = cafe_options + exp_options + report_options
-
-menu_option = st.sidebar.radio(
-    "메뉴 선택",
-    all_menus,
-    label_visibility="collapsed",
-)
-
-
 # 세션 스테이트 초기화 (미리보기 및 데이터 유지용)
 if "preview_data" not in st.session_state:
   st.session_state.preview_data = None
