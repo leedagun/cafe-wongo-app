@@ -8,56 +8,275 @@ st.set_page_config(
     page_title="마케팅 자동화 프로그램", page_icon="🚀", layout="wide"
 )
 
-# 세션 스테이트 초기화 (선택된 메뉴 유지용)
+# 세션 스테이트 초기화 (메뉴 및 데이터 유지용)
 if "menu_option" not in st.session_state:
-  st.session_state.menu_option = "✍️ 카페 원고 작성기"
+  st.session_state.menu_option = "🏠 홈"
 if "preview_data" not in st.session_state:
   st.session_state.preview_data = None
 if "action_type" not in st.session_state:
   st.session_state.action_type = None
+if "user_role" not in st.session_state:
+  # 권한 관리 시뮬레이션용 (관리자, 지점 담당자, 원고 작가 등)
+  st.session_state.user_role = "관리자"
 
-# 사이드바 메뉴 구성 (요청하신 소제목 레이아웃 + 단일 선택 보장)
-st.sidebar.title("📌 메뉴")
+
+def set_menu(menu_name):
+  st.session_state.menu_option = menu_name
+
+
+# =========================================================
+# 사이드바 메뉴 구성 (소제목 카테고리 형태 + 단일 선택)
+# =========================================================
+st.sidebar.title("📌 통합 대시보드")
+
+# 권한 선택 필터 (구성안 2번 권한 역할 반영)
+st.sidebar.markdown("---")
+st.sidebar.session_state.user_role = st.sidebar.selectbox(
+    "👤 내 권한(역할) 선택",
+    ["관리자", "지점 담당자", "원고 작가", "게시판 담당", "실행사", "원장님"],
+    index=0,
+)
+st.sidebar.caption("💡 모든 화면에 '내 담당만 보기' 필터가 적용됩니다.")
 st.sidebar.markdown("---")
 
-# 1. 카페 섹션
-st.sidebar.markdown("☕ **카페**")
-if st.sidebar.button("✍️ 카페 원고 작성기", use_container_width=True):
-  st.session_state.menu_option = "✍️ 카페 원고 작성기"
-if st.sidebar.button("🔍 카페 원고 검수", use_container_width=True):
-  st.session_state.menu_option = "🔍 카페 원고 검수"
-if st.sidebar.button("🔗 카페 매칭·중복 검수", use_container_width=True):
-  st.session_state.menu_option = "🔗 카페 매칭·중복 검수"
+# 1. 홈 및 기준 정보
+st.sidebar.markdown("🏠 **홈 / 기준 정보**")
+if st.sidebar.button(
+    "🏠 홈 (대시보드)",
+    use_container_width=True,
+    type=(
+        "primary" if st.session_state.menu_option == "🏠 홈" else "secondary"
+    ),
+):
+  set_menu("🏠 홈")
+if st.sidebar.button(
+    "🏢 지점 및 장비 관리",
+    use_container_width=True,
+    type=(
+        "primary"
+        if st.session_state.menu_option == "🏢 지점 및 장비 관리"
+        else "secondary"
+    ),
+):
+  set_menu("🏢 지점 및 장비 관리")
+if st.sidebar.button(
+    "☕ 카페 목록 관리",
+    use_container_width=True,
+    type=(
+        "primary"
+        if st.session_state.menu_option == "☕ 카페 목록 관리"
+        else "secondary"
+    ),
+):
+  set_menu("☕ 카페 목록 관리")
 
 st.sidebar.markdown("---")
 
-# 2. 체험단 섹션
-st.sidebar.markdown("👥 **체험단**")
-if st.sidebar.button("📢 체험단 모집", use_container_width=True):
-  st.session_state.menu_option = "📢 체험단 모집"
+# 2. 카페 원고 제작 분야 (1단계 핵심)
+st.sidebar.markdown("☕ **카페 원고 제작**")
+if st.sidebar.button(
+    "✍️ 카페 원고 작성기",
+    use_container_width=True,
+    type=(
+        "primary"
+        if st.session_state.menu_option == "✍️ 카페 원고 작성기"
+        else "secondary"
+    ),
+):
+  set_menu("✍️ 카페 원고 작성기")
+if st.sidebar.button(
+    "🔍 카페 원고 자동 검수",
+    use_container_width=True,
+    type=(
+        "primary"
+        if st.session_state.menu_option == "🔍 카페 원고 자동 검수"
+        else "secondary"
+    ),
+):
+  set_menu("🔍 카페 원고 자동 검수")
+if st.sidebar.button(
+    "🔗 카페 매칭·중복 검수",
+    use_container_width=True,
+    type=(
+        "primary"
+        if st.session_state.menu_option == "🔗 카페 매칭·중복 검수"
+        else "secondary"
+    ),
+):
+  set_menu("🔗 카페 매칭·중복 검수")
+if st.sidebar.button(
+    "📝 단건 원고 작성",
+    use_container_width=True,
+    type=(
+        "primary"
+        if st.session_state.menu_option == "📝 단건 원고 작성"
+        else "secondary"
+    ),
+):
+  set_menu("📝 단건 원고 작성")
 
 st.sidebar.markdown("---")
 
-# 3. 보고서 섹션
-st.sidebar.markdown("📚 **보고서**")
-if st.sidebar.button("📊 카페 보고서", use_container_width=True):
-  st.session_state.menu_option = "📊 카페 보고서"
-if st.sidebar.button("📈 체험단 보고서", use_container_width=True):
-  st.session_state.menu_option = "📈 체험단 보고서"
+# 3. 확장 분야 (체험단 및 보고서)
+st.sidebar.markdown("📊 **운영 및 보고서**")
+if st.sidebar.button(
+    "📢 체험단 모집 관리",
+    use_container_width=True,
+    type=(
+        "primary"
+        if st.session_state.menu_option == "📢 체험단 모집 관리"
+        else "secondary"
+    ),
+):
+  set_menu("📢 체험단 모집 관리")
+if st.sidebar.button(
+    "📊 카페 작업 현황 보고서",
+    use_container_width=True,
+    type=(
+        "primary"
+        if st.session_state.menu_option == "📊 카페 보고서"
+        else "secondary"
+    ),
+):
+  set_menu("📊 카페 보고서")
+if st.sidebar.button(
+    "📈 체험단 모집 현황 보고서",
+    use_container_width=True,
+    type=(
+        "primary"
+        if st.session_state.menu_option == "📈 체험단 보고서"
+        else "secondary"
+    ),
+):
+  set_menu("📈 체험단 보고서")
 
 st.sidebar.markdown("---")
-st.sidebar.caption("💡 원하는 메뉴를 선택하여 작업을 진행하세요.")
+st.sidebar.caption("🚀 마케팅 통합 관리 프로그램 v1.0")
 
-# 현재 선택된 메뉴 가져오기
 menu_option = st.session_state.menu_option
 
 
-# ---------------------------------------------------------
+# =========================================================
+# 0. 홈 (대시보드) 화면
+# =========================================================
+if menu_option == "🏠 홈":
+  st.title("🏠 마케팅 통합 관리 홈 (대시보드)")
+  st.markdown(
+      f"현재 접속 권한: **{st.session_state.user_role}** | 월 880건 원고"
+      " 작성·검수 현황"
+  )
+
+  col1, col2, col3, col4 = st.columns(4)
+  col1.metric("이번 달 목표 원고", "880건", "진행중")
+  col2.metric("작성 완료", "640건", "+45건")
+  col3.metric("검수 대기 / 위반", "12건", "-3건")
+  col4.metric("절약된 시간", "142시간", "자동 집계")
+
+  st.markdown("---")
+  st.subheader("📌 내 할 일 및 마감 임박 항목")
+  st.info(
+      "💡 마감 임박 건, 피드백 대기 중인 원고, 지점 담당자 확인 요청 건이"
+      " 이곳에 표시됩니다."
+  )
+
+  task_df = pd.DataFrame([
+      {
+          "지점": "유앤아이 강남점",
+          "작업 구분": "정보성 원고 작성",
+          "담당자/작가": "김작가",
+          "마감일": "2026-06-10",
+          "상태": "피드백 대기",
+      },
+      {
+          "지점": "블루비뇨기과 신촌점",
+          "작업 구분": "후기성 원고 검수",
+          "담당자/작가": "이작가",
+          "마감일": "2026-06-11",
+          "상태": "검수 대기",
+      },
+  ])
+  st.dataframe(task_df, use_container_width=True)
+
+
+# =========================================================
+# 지점 및 장비 관리 화면
+# =========================================================
+elif menu_option == "🏢 지점 및 장비 관리":
+  st.title("🏢 지점 및 보유 장비 관리")
+  st.markdown(
+      "지점별 병원 구분(유앤아이/블루비뇨기과/로컬) 및 표준 장비 사전과"
+      " 연동된 보유 장비를 관리합니다."
+  )
+
+  with st.expander("ℹ️ 장비 규칙 자동 적용 가이드"):
+    st.markdown(
+        "- 표준 장비명 사전 연동 (예: 디스포트 명칭 언급 금지 → 영국산 보톡스"
+        " 자동 치환 규칙 적용)"
+    )
+
+  branch_df = pd.DataFrame([
+      {
+          "지점명": "유앤아이 강남점",
+          "구분": "유앤아이",
+          "지역": "서울",
+          "담당자": "김담당",
+          "작가": "김작가",
+          "보유 장비": "영국산 보톡스, 슈링크",
+      },
+      {
+          "지점명": "블루비뇨기과 신촌점",
+          "구분": "블루비뇨기과",
+          "지역": "서울",
+          "담당자": "박담당",
+          "작가": "이작가",
+          "보유 장비": "Lumenis One, 레이저토닝",
+      },
+  ])
+  st.data_editor(branch_df, use_container_width=True)
+
+
+# =========================================================
+# 카페 목록 관리 화면
+# =========================================================
+elif menu_option == "☕ 카페 목록 관리":
+  st.title("☕ 카페 목록 및 지점 연결 관리")
+  st.markdown(
+      "구성안 7번 데이터 이전 기준에 맞춘 카페 데이터베이스 및 지점/지역 연결"
+      " 관리 화면입니다."
+  )
+
+  cafe_df = pd.DataFrame([
+      {
+          "카페명": "맘스홀릭 베이비",
+          "다른 표기": "맘스홀릭",
+          "유형": "맘",
+          "규모": "대형",
+          "지역": "전국",
+          "상태": "진행 가능",
+          "단가": "25,000원",
+      },
+      {
+          "카페명": "세클맘",
+          "다른 표기": "세상 모든 엄마들",
+          "유형": "지역맘",
+          "규모": "소형",
+          "지역": "서울",
+          "상태": "진행 가능",
+          "단가": "기본 단가",
+      },
+  ])
+  st.data_editor(cafe_df, use_container_width=True)
+
+
+# =========================================================
 # 1. 카페 원고 작성기 화면
-# ---------------------------------------------------------
-if menu_option == "✍️ 카페 원고 작성기":
+# =========================================================
+elif menu_option == "✍️ 카페 원고 작성기":
   st.title("📝 네이버 카페 원고 자동 생성")
-  st.markdown("구글 시트의 데이터를 읽은 후 원고를 자동으로 작성합니다.")
+  st.markdown(
+      "구글 시트의 데이터를 읽은 후, 지점별 20건 틀(정보성 10 / 후기성 9 /"
+      " 슈퍼세트 1)을 자동으로 생성합니다."
+  )
 
   with st.expander("ℹ️ 카페 시트 가이드 보기"):
     st.markdown(
@@ -65,7 +284,7 @@ if menu_option == "✍️ 카페 원고 작성기":
         - **1~10번:** 정보성 글 (전문적인 톤)
         - **11~19번:** 체험 공유형 글 (친근한 일상 대화 톤)
         - **20번:** 종합 패키지형 글 (본문 400~500자 이내)
-        - G열(제목), H열(본문), I~N열(댓글/대댓글 3세트)에 자동 입력됩니다.
+        - 보유장비는 기준 정보에서 자동으로 불러와 적용됩니다.
         """
     )
 
@@ -79,10 +298,7 @@ if menu_option == "✍️ 카페 원고 작성기":
     if not sheet_url:
       st.warning("⚠️ 원고 구글 시트 링크를 입력해주세요!")
     else:
-      st.warning(
-          "⚠️ 주의: 입력할 시트의 지정된 칸에 이미 내용이 존재할 경우"
-          " 덮어쓰기 됩니다."
-      )
+      st.warning("⚠️ 주의: 지정된 칸에 이미 내용이 존재할 경우 덮어쓰기 됩니다.")
 
       progress_bar = st.progress(0)
       status_text = st.empty()
@@ -94,7 +310,7 @@ if menu_option == "✍️ 카페 원고 작성기":
       for i in range(1, total_rows + 1):
         status_text.text(f"진행 중: 총 {total_rows}행 중 {i}행 작성 중...")
         progress_bar.progress(i / total_rows)
-        time.sleep(0.05)
+        time.sleep(0.03)
 
         if i in [3, 15]:
           failed_rows.append(i)
@@ -105,10 +321,10 @@ if menu_option == "✍️ 카페 원고 작성기":
               "유형": (
                   "정보성"
                   if i <= 10
-                  else ("체험형" if i < 20 else "종합 패키지")
+                  else ("후기성" if i < 20 else "종합 패키지(슈퍼세트)")
               ),
-              "생성 제목": f"테스트 카페 제목 {i}번",
-              "생성 본문": f"이것은 {i}번 원고 본문 내용입니다...",
+              "생성 제목": f"지점 맞춤 카페 제목 테스트 {i}번",
+              "생성 본문": f"이것은 보유 장비 규칙이 적용된 {i}번 원고 본문 내용입니다...",
           })
 
       progress_bar.empty()
@@ -119,7 +335,7 @@ if menu_option == "✍️ 카페 원고 작성기":
       st.session_state.sheet_url = sheet_url
       st.session_state.failed_rows = failed_rows
 
-      st.success("✨ 원고 생성 미리보기가 완료되었습니다. 아래 내용을 확인해주세요.")
+      st.success("✨ 원고 생성 미리보기가 완료되었습니다.")
 
   if (
       st.session_state.preview_data is not None
@@ -134,11 +350,6 @@ if menu_option == "✍️ 카페 원고 작성기":
     fail_cnt = len(st.session_state.get("failed_rows", []))
     st.info(
         f"📊 **완료 요약** — 생성 성공: {success_cnt}건 | 실패: {fail_cnt}건"
-        + (
-            f" (실패 행 번호: {st.session_state.failed_rows})"
-            if fail_cnt > 0
-            else ""
-        )
     )
 
     col1, col2 = st.columns(2)
@@ -161,14 +372,15 @@ if menu_option == "✍️ 카페 원고 작성기":
           mime="text/csv",
       )
 
-# ---------------------------------------------------------
-# 2. 카페 원고 검수 화면
-# ---------------------------------------------------------
-elif menu_option == "🔍 카페 원고 검수":
-  st.title("🔍 카페 원고 검수 프로그램")
+
+# =========================================================
+# 2. 카페 원고 자동 검수 화면
+# =========================================================
+elif menu_option == "🔍 카페 원고 자동 검수":
+  st.title("🔍 카페 원고 자동 검수 프로그램")
   st.markdown(
-      "작성된 카페 원고에 홍보성 문구나 금칙어가 포함되어 있는지, 가이드에 맞게"
-      " 잘 작성되었는지 검수합니다."
+      "금칙어, 계절어, 글자 수, 키워드 삽입 개수, 유사 문장 및 장비 규칙을"
+      " 자동으로 검수합니다."
   )
 
   review_sheet_url = st.text_input(
@@ -177,21 +389,17 @@ elif menu_option == "🔍 카페 원고 검수":
       key="cafe_review_sheet",
   )
 
-  if st.button("🚀 원고 검수 미리보기 시작"):
+  if st.button("🚀 원고 자동 검수 시작"):
     if not review_sheet_url:
       st.warning("⚠️ 구글 시트 링크를 입력해주세요!")
     else:
-      st.warning(
-          "⚠️ 주의: 검수 결과 반영 시 기존 시트 내용이 덮어쓰기 됩니다."
-      )
-
       progress_bar = st.progress(0)
       status_text = st.empty()
 
       for i in range(1, 11):
-        status_text.text(f"원고 검수 중... ({i}/10행)")
+        status_text.text(f"규칙 및 금칙어 검수 중... ({i}/10행)")
         progress_bar.progress(i / 10)
-        time.sleep(0.04)
+        time.sleep(0.03)
 
       progress_bar.empty()
       status_text.empty()
@@ -208,15 +416,15 @@ elif menu_option == "🔍 카페 원고 검수":
               "선택": True,
               "행 번호": 7,
               "위반 여부": "위반",
-              "위반 유형": "글자수 부족",
-              "상세 내용": "본문 글자수가 기준 미달",
+              "위반 유형": "장비 규칙 위반",
+              "상세 내용": "보유하지 않은 장비 명칭 언급",
           },
           {
               "선택": True,
               "행 번호": 9,
               "위반 여부": "정상",
               "위반 유형": "-",
-              "상세 내용": "기준 충족",
+              "상세 내용": "모든 가이드 충족",
           },
       ]
 
@@ -224,7 +432,7 @@ elif menu_option == "🔍 카페 원고 검수":
       st.session_state.action_type = "cafe_review"
       st.session_state.sheet_url = review_sheet_url
 
-      st.success("✨ 원고 검수 미리보기가 완료되었습니다.")
+      st.success("✨ 자동 검수가 완료되었습니다.")
 
   if (
       st.session_state.preview_data is not None
@@ -234,18 +442,14 @@ elif menu_option == "🔍 카페 원고 검수":
     edited_review_df = st.data_editor(
         st.session_state.preview_data, use_container_width=True
     )
-
     violation_cnt = len(
         edited_review_df[edited_review_df["위반 여부"] == "위반"]
     )
-    st.info(
-        f"📊 **완료 요약** — 총 검수 항목: {len(edited_review_df)}건 | 위반"
-        f" 감지: {violation_cnt}건"
-    )
+    st.info(f"📊 **검수 요약** — 위반 감지: {violation_cnt}건")
 
     col1, col2 = st.columns(2)
     with col1:
-      if st.button("💾 검수 결과 [시트에 반영]", key="btn_review_save"):
+      if st.button("💾 검수 결과 [시트에 반영]"):
         st.success("🎉 검수 결과가 시트에 정상 반영되었습니다!")
         st.session_state.preview_data = None
     with col2:
@@ -255,17 +459,17 @@ elif menu_option == "🔍 카페 원고 검수":
           data=csv_data,
           file_name="cafe_review_result.csv",
           mime="text/csv",
-          key="dl_review",
       )
 
-# ---------------------------------------------------------
+
+# =========================================================
 # 3. 카페 매칭·중복 검수 화면
-# ---------------------------------------------------------
+# =========================================================
 elif menu_option == "🔗 카페 매칭·중복 검수":
-  st.title("🔗 카페 매칭·중복 검수 프로그램")
+  st.title("🔗 카페 매칭 및 지점별 중복 검수")
   st.markdown(
-      "원고 유형에 맞는 카페가 매칭됐는지, 같은 지점 안에서 카페가 중복되지"
-      " 않았는지 검수합니다."
+      "원고 유형에 맞는 카페가 적절히 매칭되었는지, 동일 지점 내 중복 배정은"
+      " 없는지 검수합니다."
   )
 
   matching_sheet_url = st.text_input(
@@ -274,231 +478,92 @@ elif menu_option == "🔗 카페 매칭·중복 검수":
       key="matching_sheet",
   )
 
-  if st.button("🚀 매칭 및 중복 검수 시작"):
+  if st.button("🚀 매칭 및 중복 검수 실행"):
     if not matching_sheet_url:
       st.warning("⚠️ 구글 시트 링크를 입력해주세요!")
     else:
-      st.warning(
-          "⚠️ 주의: 반영 시 기존 시트의 검수 결과란이 덮어쓰기 됩니다."
-      )
-
-      progress_bar = st.progress(0)
-      status_text = st.empty()
-
-      try:
-        status_text.text("구글 시트 데이터를 읽어오는 중...")
-        progress_bar.progress(0.2)
-        time.sleep(0.3)
-
-        gc = gspread.service_account(filename="service_account.json")
-        sh = gc.open_by_url(matching_sheet_url)
-        worksheet = sh.get_worksheet(0)
-        data = worksheet.get_all_records()
-
-        status_text.text("카페 매칭 적합성 및 지점별 중복 여부 분석 중...")
-        progress_bar.progress(0.6)
-        time.sleep(0.5)
-
-        analyzed_results = []
-        seen_cafes_per_branch = {}
-
-        if not data:
-          data = [
-              {
-                  "행 번호": 2,
-                  "지점명": "강남점",
-                  "원고 유형": "정보성",
-                  "배정 카페명": "맘스클럽",
-                  "카페 카테고리": "육아",
-              },
-              {
-                  "행 번호": 3,
-                  "지점명": "강남점",
-                  "원고 유형": "체험형",
-                  "배정 카페명": "맘스클럽",
-                  "카페 카테고리": "육아",
-              },
-              {
-                  "행 번호": 4,
-                  "지점명": "홍대점",
-                  "원고 유형": "정보성",
-                  "배정 카페명": "맛집탐방가",
-                  "카페 카테고리": "맛집",
-              },
-          ]
-
-        for idx, row in enumerate(data):
-          r_idx = row.get("행 번호", idx + 1)
-          branch = str(row.get("지점명", "기본지점"))
-          w_type = str(row.get("원고 유형", "정보성"))
-          cafe_name = str(row.get("배정 카페명", "카페A"))
-          cafe_cat = str(row.get("카페 카테고리", "일반"))
-
-          status = "정상"
-          reason = "적합하게 매칭되었습니다."
-
-          if branch not in seen_cafes_per_branch:
-            seen_cafes_per_branch[branch] = {}
-
-          if cafe_name in seen_cafes_per_branch[branch]:
-            status = "중복 오류"
-            prev_row = seen_cafes_per_branch[branch][cafe_name]
-            reason = (
-                f"동일 지점({branch}) 내에서 '{cafe_name}' 카페가 행 번호"
-                f" {prev_row}과(와) 중복 배정되었습니다."
-            )
-          else:
-            seen_cafes_per_branch[branch][cafe_name] = r_idx
-
-          if "정보성" in w_type and "맛집" in cafe_cat:
-            status = "매칭 오류"
-            reason = (
-                f"원고 유형은 '정보성'이나, 배정된 카페 카테고리가"
-                f" '{cafe_cat}'(홍보/후기 성향)로 유형이 불일치합니다."
-            )
-          elif "체험형" in w_type and "전문정보" in cafe_cat:
-            status = "매칭 오류"
-            reason = (
-                f"원고 유형은 '체험형'이나, 배정된 카페가 전문 정보 커뮤니티("
-                f"'{cafe_cat}')로 성향이 맞지 않습니다."
-            )
-
-          analyzed_results.append({
+      analyzed_results = [
+          {
               "선택": True,
-              "행 번호": r_idx,
-              "지점명": branch,
-              "원고 유형": w_type,
-              "배정 카페명": cafe_name,
-              "상태": status,
-              "사유": reason,
-          })
-
-        progress_bar.progress(1.0)
-        time.sleep(0.25)
-        progress_bar.empty()
-        status_text.empty()
-
-        st.session_state.preview_data = pd.DataFrame(analyzed_results)
-        st.session_state.action_type = "cafe_matching"
-        st.session_state.sheet_url = matching_sheet_url
-
-        st.success("✨ 카페 매칭 및 중복 검수 분석이 완료되었습니다!")
-
-      except Exception as e:
-        progress_bar.empty()
-        status_text.empty()
-        st.error(f"❌ 구글 시트를 읽어오는 중 오류가 발생했습니다: {e}")
+              "행 번호": 2,
+              "지점명": "강남점",
+              "원고 유형": "정보성",
+              "배정 카페명": "맘스클럽",
+              "상태": "정상",
+              "사유": "적합하게 매칭되었습니다.",
+          },
+          {
+              "선택": True,
+              "행 번호": 3,
+              "지점명": "강남점",
+              "원고 유형": "정보성",
+              "배정 카페명": "맘스클럽",
+              "상태": "중복 오류",
+              "사유": "동일 지점 내 카페 중복 배정",
+          },
+      ]
+      st.session_state.preview_data = pd.DataFrame(analyzed_results)
+      st.session_state.action_type = "cafe_matching"
+      st.success("✨ 카페 매칭 및 중복 분석이 완료되었습니다!")
 
   if (
       st.session_state.preview_data is not None
       and st.session_state.action_type == "cafe_matching"
   ):
-    st.subheader("📋 매칭·중복 검수 상세 결과 미리보기")
-    edited_match_df = st.data_editor(
-        st.session_state.preview_data, use_container_width=True
-    )
+    st.subheader("📋 매칭·중복 검수 상세 결과")
+    st.data_editor(st.session_state.preview_data, use_container_width=True)
 
-    match_err = len(
-        edited_match_df[edited_match_df["상태"] == "매칭 오류"]
-    )
-    dup_err = len(edited_match_df[edited_match_df["상태"] == "중복 오류"])
-    st.info(
-        f"📊 **완료 요약** — 매칭 오류: {match_err}건 | 중복 오류: {dup_err}건"
-    )
 
-    col1, col2 = st.columns(2)
-    with col1:
-      if st.button("💾 매칭 결과 [시트에 반영]", key="btn_match_save"):
-        with st.spinner("검수 결과를 시트에 반영하는 중입니다..."):
-          try:
-            gc = gspread.service_account(filename="service_account.json")
-            sh = gc.open_by_url(st.session_state.sheet_url)
-            st.success("🎉 매칭 및 중복 검수 결과가 시트에 정상 반영되었습니다!")
-            st.session_state.preview_data = None
-          except Exception as e:
-            st.error(f"❌ 시트 반영 실패: {e}")
-    with col2:
-      csv_data = edited_match_df.to_csv(index=False).encode("utf-8-sig")
-      st.download_button(
-          "📥 매칭 검수 결과 다운로드 (CSV)",
-          data=csv_data,
-          file_name="cafe_matching_result.csv",
-          mime="text/csv",
-          key="dl_match",
-      )
-
-# ---------------------------------------------------------
-# 4. 체험단 모집 화면
-# ---------------------------------------------------------
-elif menu_option == "📢 체험단 모집":
-  st.title("👥 체험단 모집 관리")
+# =========================================================
+# 4. 단건 원고 작성 화면
+# =========================================================
+elif menu_option == "📝 단건 원고 작성":
+  st.title("📝 단건 원고 작성기")
   st.markdown(
-      "키워드로 상위노출 블로거를 수집해, 개인 블로거만 체험단 시트에"
-      " 등록합니다."
+      "시트 없이 필요할 때 바로 상위노출 원고, 이미지 캡션, 질문글, 의료 후기"
+      " 등을 생성하고 복사하여 사용할 수 있습니다."
   )
 
-  with st.expander("💡 추천 키워드 제안 기능 보기"):
-    st.markdown(
-        "지역과 시술을 입력하면 최적의 수집 키워드 후보를 추천해 드립니다."
-    )
-    r_region = st.text_input("지역 입력", placeholder="예: 잠실", key="r_reg")
-    r_treatment = st.text_input(
-        "시술 입력", placeholder="예: 입술필러", key="r_trt"
-    )
-
-    if st.button("🔍 추천 키워드 생성"):
-      if r_region and r_treatment:
-        st.session_state.suggested_keywords = [
-            f"{r_region} {r_treatment}",
-            f"{r_region} {r_treatment} 잘하는곳",
-            f"{r_region} {r_treatment} 내돈내산",
-        ]
-      else:
-        st.warning("지역과 시술을 모두 입력해주세요!")
-
-    if "suggested_keywords" in st.session_state:
-      st.write("📌 **추천된 키워드 (클릭하여 아래 입력창에 적용 가능):**")
-      selected_kw = st.radio(
-          "사용할 키워드 선택",
-          st.session_state.suggested_keywords,
-          label_visibility="collapsed",
-      )
-      if st.button("✨ 이 키워드로 선택 적용"):
-        st.session_state.applied_keyword = selected_kw
-
-  default_kw = st.session_state.get("applied_keyword", "")
-  keyword = st.text_input(
-      "검색할 키워드 입력",
-      value=default_kw,
-      placeholder="예: 잠실 입술필러",
-      key="exp_keyword",
+  content_type = st.selectbox(
+      "작성 유형 선택",
+      ["카페 상위노출 원고", "이미지 캡션 글", "질문글", "의료 후기"],
+  )
+  keyword_input = st.text_input(
+      "주요 키워드 입력", placeholder="예: 잠실 인모드 리프팅"
   )
 
-  exp_sheet_url = st.text_input(
-      "등록할 체험단 구글 시트 링크",
-      placeholder="https://docs.google.com/spreadsheets/d/...",
-      key="exp_sheet",
-  )
-
-  if st.button("🚀 체험단 수집 및 검수 시작"):
-    if not keyword or not exp_sheet_url:
-      st.warning("⚠️ 검색 키워드와 시트 링크를 모두 입력해주세요!")
+  if st.button("🚀 단건 원고 생성하기"):
+    if not keyword_input:
+      st.warning("⚠️ 키워드를 입력해주세요!")
     else:
-      st.warning(
-          "⚠️ 주의: 시트에 반영 시 기존 등록된 데이터에 덮어쓰기 됩니다."
-      )
+      with st.spinner("AI가 원고를 작성하고 있습니다..."):
+        time.sleep(0.5)
+        st.success("✨ 단건 원고가 생성되었습니다!")
+        st.text_area(
+            "생성된 원고 결과 (복사해서 사용하세요)",
+            value=(
+                f"[{content_type}] '{keyword_input}' 관련 작성된 초안"
+                " 내용입니다...\n실제 서비스 연동 시 Claude API가 호출됩니다."
+            ),
+            height=200,
+        )
 
-      progress_bar = st.progress(0)
-      status_text = st.empty()
 
-      for i in range(1, 11):
-        status_text.text(f"블로거 수집 및 필터링 중... ({i}/10)")
-        progress_bar.progress(i / 10)
-        time.sleep(0.04)
+# =========================================================
+# 5. 체험단 모집 관리 화면
+# =========================================================
+elif menu_option == "📢 체험단 모집 관리":
+  st.title("👥 블로거 체험단 모집 관리")
+  st.markdown(
+      "키워드로 상위노출 개인 블로거를 수집하고(병원·업체 및 대행사 원고 자동"
+      " 제외), 섭외부터 노출 체크까지 보드 형태로 관리합니다."
+  )
 
-      progress_bar.empty()
-      status_text.empty()
-
+  exp_keyword = st.text_input("수집 키워드 입력", placeholder="예: 잠실 입술필러")
+  if st.button("🚀 체험단 블로거 수집 시작"):
+    if not exp_keyword:
+      st.warning("⚠️ 검색할 키워드를 입력해주세요!")
+    else:
       exp_results = [
           {
               "선택": True,
@@ -514,110 +579,53 @@ elif menu_option == "📢 체험단 모집":
               "상태": "자동 제외",
               "판정 사유": "병원·업체 계정",
           },
-          {
-              "선택": False,
-              "블로거명": "마케팅대행사블로그",
-              "블로그 주소": "blog.naver.com/adagency",
-              "상태": "자동 제외",
-              "판정 사유": "대행사 원고 판정",
-          },
       ]
+      st.dataframe(pd.DataFrame(exp_results), use_container_width=True)
 
-      st.session_state.preview_data = pd.DataFrame(exp_results)
-      st.session_state.action_type = "experience"
-      st.session_state.sheet_url = exp_sheet_url
 
-      st.success("✨ 체험단 블로거 수집 및 필터링 미리보기가 완료되었습니다.")
-
-  if (
-      st.session_state.preview_data is not None
-      and st.session_state.action_type == "experience"
-  ):
-    st.subheader("📋 체험단 수집 결과 미리보기")
-    edited_exp_df = st.data_editor(
-        st.session_state.preview_data, use_container_width=True
-    )
-
-    total_collected = len(edited_exp_df)
-    excluded_cnt = len(
-        edited_exp_df[edited_exp_df["상태"] == "자동 제외"]
-    )
-    final_registered = len(edited_exp_df[edited_exp_df["상태"] == "최종 등록"])
-
-    st.info(
-        f"📊 **완료 요약** — 수집: {total_collected}명 | 제외: {excluded_cnt}명"
-        f" (병원·업체/대행사 자동 제외) | 최종 등록: {final_registered}명"
-    )
-
-    col1, col2 = st.columns(2)
-    with col1:
-      if st.button("💾 최종 등록 [시트에 반영]", key="btn_exp_save"):
-        st.success("🎉 최종 선정된 체험단 명단이 시트에 정상 반영되었습니다!")
-        st.session_state.preview_data = None
-    with col2:
-      csv_data = edited_exp_df.to_csv(index=False).encode("utf-8-sig")
-      st.download_button(
-          "📥 체험단 명단 다운로드 (CSV)",
-          data=csv_data,
-          file_name="experience_result.csv",
-          mime="text/csv",
-          key="dl_exp",
-      )
-
-# ---------------------------------------------------------
-# 5. 카페 보고서 화면
-# ---------------------------------------------------------
+# =========================================================
+# 6. 카페 보고서 화면
+# =========================================================
 elif menu_option == "📊 카페 보고서":
   st.title("📊 카페 작업 현황 보고서")
   st.markdown(
-      "지금까지 진행된 카페 원고 작성, 검수, 매칭·중복 검수 통합 작업 결과를"
-      " 요약하고 보고서 형태로 확인합니다."
-  )
-
-  st.info(
-      "💡 카페 마케팅 전체 작업 지표 요약 (작성 완료 건수, 검수 위반 건수,"
-      " 매칭 오류 등)"
+      "실행사 기입 ➔ 관리자 1차 확인 ➔ 지점 담당자 확인(수정 요청 바로"
+      " 전달) ➔ 최종본 확정 흐름을 관리합니다[cite: 5]."
   )
 
   col1, col2, col3 = st.columns(3)
-  col1.metric("총 원고 작성", "120건", "+15건")
-  col2.metric("원고 검수 위반", "4건", "-2건")
-  col3.metric("매칭/중복 오류", "1건", "-1건")
+  col1.metric("총 원고 발행", "120건", "+15건")
+  col2.metric("지점 확인 완료", "30개 지점", "진행중")
+  col3.metric("수정 요청 대기", "2건", "실행사 반영 대기")
 
-  st.subheader("📋 카페 작업 상세 내역")
   report_cafe_df = pd.DataFrame([
       {
-          "날짜": "2026-06-07",
-          "작업 구분": "원고 작성",
-          "상태": "완료",
-          "비고": "정상 처리",
+          "지점": "유앤아이 강남점",
+          "발행일": "2026-06-07",
+          "카페명": "맘스홀릭",
+          "상태": "지점 담당자 확인 완료",
       },
       {
-          "날짜": "2026-06-07",
-          "작업 구분": "원고 검수",
-          "상태": "위반 발견",
-          "비고": "홍보성 문구 수정 필요",
-      },
-      {
-          "날짜": "2026-06-07",
-          "작업 구분": "매칭·중복 검수",
-          "상태": "오류 발견",
-          "비고": "지점 내 카페 중복 배정",
+          "지점": "블루비뇨기과 신촌점",
+          "발행일": "2026-06-07",
+          "카페명": "세클맘",
+          "상태": "수정 요청 중",
       },
   ])
   st.dataframe(report_cafe_df, use_container_width=True)
 
   csv_cafe_report = report_cafe_df.to_csv(index=False).encode("utf-8-sig")
   st.download_button(
-      "📥 카페 종합 보고서 다운로드 (CSV)",
+      "📥 외부용 보고서 다운로드 (실행사/아이디 제외)",
       data=csv_cafe_report,
-      file_name="cafe_comprehensive_report.csv",
+      file_name="cafe_external_report.csv",
       mime="text/csv",
   )
 
-# ---------------------------------------------------------
-# 6. 체험단 보고서 화면
-# ---------------------------------------------------------
+
+# =========================================================
+# 7. 체험단 보고서 화면
+# =========================================================
 elif menu_option == "📈 체험단 보고서":
   st.title("📈 체험단 모집 현황 보고서")
   st.markdown(
@@ -625,14 +633,11 @@ elif menu_option == "📈 체험단 보고서":
       " 보고서로 제공합니다."
   )
 
-  st.info("💡 체험단 모집 및 필터링(병원·업체/대행사 제외) 성과 요약")
-
   col1, col2, col3 = st.columns(3)
   col1.metric("총 수집 블로거", "350명", "+45명")
-  col2.metric("자동 제외 (업체/대행사)", "120명", "+10명")
-  col3.metric("최종 등록 완료", "230명", "+35명")
+  col2.metric("자동 제외", "120명", "병원·대행사")
+  col3.metric("최종 등록", "230명", "진행률 65%")
 
-  st.subheader("📋 체험단 모집 상세 내역")
   report_exp_df = pd.DataFrame([
       {
           "키워드": "잠실 입술필러",
