@@ -7,7 +7,7 @@ st.set_page_config(
     page_title="마케팅 자동화 프로그램", page_icon="🚀", layout="wide"
 )
 
-# 사이드바 메뉴 구성 (4가지 메뉴로 확장)
+# 사이드바 메뉴 구성 (4가지 메뉴)
 st.sidebar.title("📌 메뉴")
 menu_option = st.sidebar.radio(
     "메뉴 선택",
@@ -17,12 +17,15 @@ menu_option = st.sidebar.radio(
 
 # 변수 미리 선언
 sheet_url = ""
+matching_sheet_url = ""
 api_key = ""
 
 # ---------------------------------------------------------
-# [중요] 카페 관련 메뉴들을 선택했을 때만 사이드바에 설정창 표시
+# [설정 영역] 메뉴별 맞춤 설정 분기
 # ---------------------------------------------------------
-if menu_option in ["카페 원고 작성기", "카페 원고 검수", "카페 계정 매칭"]:
+
+# 1. 카페 원고 작성기 & 카페 원고 검수 선택 시
+if menu_option in ["카페 원고 작성기", "카페 원고 검수"]:
   st.sidebar.markdown("---")
   st.sidebar.subheader("⚙️ 카페 프로그램 공통 설정")
   sheet_url = st.sidebar.text_input(
@@ -32,6 +35,24 @@ if menu_option in ["카페 원고 작성기", "카페 원고 검수", "카페 �
   api_key = st.sidebar.text_input(
       "Anthropic API Key", type="password", placeholder="sk-ant-..."
   )
+
+# 2. 카페 계정 매칭 선택 시 (API 키는 공유하되, 시트 링크는 별도 설정)
+elif menu_option == "카페 계정 매칭":
+  st.sidebar.markdown("---")
+  st.sidebar.subheader("⚙️ 카페 계정 매칭 설정")
+  matching_sheet_url = st.sidebar.text_input(
+      "계정 매칭 구글 시트 링크",
+      placeholder="https://docs.google.com/spreadsheets/d/...",
+  )
+  api_key = st.sidebar.text_input(
+      "Anthropic API Key", type="password", placeholder="sk-ant-..."
+  )
+
+# 3. 체험단 모집 선택 시 (설정 아예 없음)
+elif menu_option == "체험단 모집":
+  # 체험단은 설정창을 띄우지 않습니다.
+  pass
+
 
 # ---------------------------------------------------------
 # 1. 카페 원고 작성기 화면
@@ -85,7 +106,7 @@ elif menu_option == "카페 원고 검수":
       st.success("✨ 원고 검수가 완료되었습니다!")
 
 # ---------------------------------------------------------
-# 3. 카페 계정 매칭 화면 (신규 추가)
+# 3. 카페 계정 매칭 화면 (별도 시트 링크 적용)
 # ---------------------------------------------------------
 elif menu_option == "카페 계정 매칭":
   st.title("🔗 카페 계정 매칭 프로그램")
@@ -95,13 +116,21 @@ elif menu_option == "카페 계정 매칭":
   )
 
   if st.button("🚀 계정 매칭 실행"):
-    if not sheet_url or not api_key:
-      st.warning("⚠️ 구글 시트 링크와 Anthropic API 키를 모두 입력해주세요!")
+    if not matching_sheet_url or not api_key:
+      st.warning("⚠️ 계정 매칭 구글 시트 링크와 Anthropic API 키를 모두 입력해주세요!")
     else:
-      st.success("✨ 카페 계정 매칭 작업이 완료되었습니다!")
+      with st.spinner("카페 계정 매칭을 진행 중입니다..."):
+        try:
+          gc = gspread.service_account(filename="service_account.json")
+          sh = gc.open_by_url(matching_sheet_url)
+          # (추가적인 매칭 로직 처리 가능)
+
+          st.success("✨ 카페 계정 매칭 작업이 완료되었습니다!")
+        except Exception as e:
+          st.error(f"❌ 오류가 발생했습니다: {e}")
 
 # ---------------------------------------------------------
-# 4. 체험단 모집 화면 (공통 설정 아예 없음)
+# 4. 체험단 모집 화면 (설정 없음)
 # ---------------------------------------------------------
 elif menu_option == "체험단 모집":
   st.title("👥 체험단 모집 관리")
@@ -109,9 +138,7 @@ elif menu_option == "체험단 모집":
       "체험단 신청자 명단을 관리하고 선정 가이드를 생성하는 공간입니다."
   )
 
-  st.info(
-      "💡체험단 모집 프로그램 사용을 위해 검색할 키워드를 입력해주세요"
-  )
+  st.info("💡 체험단 모집 프로그램 사용을 위해 검색할 키워드를 입력해주세요")
 
   if st.button("🚀 체험단 프로그램 실행"):
     st.success("✨ 체험단 프로그램이 실행되었습니다!")
