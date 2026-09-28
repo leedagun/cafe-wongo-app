@@ -8,34 +8,67 @@ st.set_page_config(
     page_title="마케팅 자동화 프로그램", page_icon="🚀", layout="wide"
 )
 
-# 사이드바 메뉴 구성 (소제목과 단일 선택 라디오 활용)
-st.sidebar.title("📌 통합 대시보드")
-
+# 사이드바 메뉴 구성 (요청하신 섹션형 레이아웃)
+st.sidebar.title("📌 메뉴")
 st.sidebar.markdown("---")
-st.sidebar.markdown("**☕ 카페**")
-cafe_options = [
-    "✍️ 카페 원고 작성기",
-    "🔍 카페 원고 검수",
-    "🔗 카페 매칭·중복 검수",
-]
 
-st.sidebar.markdown("**👥 체험단**")
-exp_options = ["📢 체험단 모집"]
-
-st.sidebar.markdown("**📊 보고서**")
-report_options = ["📊 카페 보고서", "📈 체험단 보고서"]
-
-# 전체 메뉴를 하나로 합쳐서 단일 선택 보장
-all_menus = cafe_options + exp_options + report_options
-
-menu_option = st.sidebar.radio(
-    "메뉴 선택",
-    all_menus,
+# 1. 카페 섹션
+st.sidebar.markdown("☕ **카페**")
+cafe_menu = st.sidebar.radio(
+    "카페 메뉴 선택",
+    ["✍️ 카페 원고 작성기", "🔍 카페 원고 검수", "🔗 카페 매칭·중복 검수"],
     label_visibility="collapsed",
+    key="cafe_radio",
 )
 
 st.sidebar.markdown("---")
-st.sidebar.caption("💡 상단 메뉴에서 원하는 작업을 선택하세요.")
+
+# 2. 체험단 섹션
+st.sidebar.markdown("👥 **체험단**")
+exp_menu = st.sidebar.radio(
+    "체험단 메뉴 선택",
+    ["📢 체험단 모집"],
+    label_visibility="collapsed",
+    key="exp_radio",
+)
+
+st.sidebar.markdown("---")
+
+# 3. 보고서 섹션
+st.sidebar.markdown("📚 **보고서**")
+report_menu = st.sidebar.radio(
+    "보고서 메뉴 선택",
+    ["📊 카페 보고서", "📈 체험단 보고서"],
+    label_visibility="collapsed",
+    key="report_radio",
+)
+
+st.sidebar.markdown("---")
+
+# 어떤 섹션의 메뉴를 가장 최근에 클릭했는지 판별하여 하나의 메뉴로 통합
+# (사용자가 다른 섹션을 누르면 다른 섹션은 직전 선택이 유지되므로, 세션 상태로 최근 클릭 추적)
+if "last_active_menu" not in st.session_state:
+  st.session_state.last_active_menu = "✍️ 카페 원고 작성기"
+
+# 라디오 버튼 상태 변화 감지를 위한 세션 관리
+if "prev_cafe" not in st.session_state:
+  st.session_state.prev_cafe = cafe_menu
+if "prev_exp" not in st.session_state:
+  st.session_state.prev_exp = exp_menu
+if "prev_report" not in st.session_state:
+  st.session_state.prev_report = report_menu
+
+if cafe_menu != st.session_state.prev_cafe:
+  st.session_state.last_active_menu = cafe_menu
+  st.session_state.prev_cafe = cafe_menu
+elif exp_menu != st.session_state.prev_exp:
+  st.session_state.last_active_menu = exp_menu
+  st.session_state.prev_exp = exp_menu
+elif report_menu != st.session_state.prev_report:
+  st.session_state.last_active_menu = report_menu
+  st.session_state.prev_report = report_menu
+
+menu_option = st.session_state.last_active_menu
 
 
 # 세션 스테이트 초기화 (미리보기 및 데이터 유지용)
