@@ -64,7 +64,7 @@ def menu_btn(label, target_menu):
 
 st.sidebar.markdown("📌 **메뉴 선택**")
 
-# 역할별 메뉴 제한 설정 (실행사 메뉴에 카페 계정 관리 추가 반영)
+# 역할별 메뉴 제한 설정
 if role == "관리자":
   menu_btn("🏠 홈 (대시보드)", "🏠 홈 (대시보드)")
   menu_btn("🏢 지점 및 장비 관리", "🏢 지점 및 장비 관리")
@@ -142,6 +142,7 @@ if menu_option == "🏠 홈 (대시보드)":
 
   st.markdown("---")
   st.subheader("📌 담당자별 카드 현황 (8명 기준)")
+
   c1, c2, c3, c4 = st.columns(4)
   with c1:
     st.info("**김담당 (사수)**\n\n- 담당 지점: 8곳\n- 진행률: 150/160 (93%)\n- 상태: 정상")
@@ -159,24 +160,51 @@ if menu_option == "🏠 홈 (대시보드)":
 elif menu_option == "🏢 지점 및 장비 관리":
   st.title("🏢 지점 및 보유 장비 관리")
   st.markdown(
-      "지점명을 2열로 나열하고 장비 분류별(리스트업된 표준 장비)로 묶어 관리합니다"
-      "[cite: 13]."
+      "지점 50개 기준 가나다순 정렬 및 실시간 검색을 지원하며, 지점을 선택하여"
+      " 장비 분류별 상세 내역을 관리합니다[cite: 13]."
   )
 
-  col_b1, col_b2 = st.columns(2)
-  with col_b1:
-    st.markdown("### 🏥 유앤아이 강남점 (장비 12개)")
-    st.info(
-        "**[리프팅]** 울쎄라피 프라임 (수량: 2), 슈링크 유니버스\n\n**[주사"
-        " 시술]** 리쥬란, 쥬베룩, 보톡스 (디스포트 명칭 언급x -> 영국산"
-        " 보톡스)\n\n**[색소]** 피코플러스, CO2"
-    )
-  with col_b2:
-    st.markdown("### 🏥 블루비뇨기과 신촌점 (장비 5개)")
-    st.info(
-        "**[기타/특수]** I-MOVE 쇄석기\n\n**[주의사항]** 정관수술, 포경수술 등 수술은"
-        " 진행하지 않음[cite: 13]"
-    )
+  # 검색 및 가나다순 지점 목록 뷰 추가
+  search_branch = st.text_input(
+      "🔍 지점명 검색 (예: '광' 입력 시 광교점, 광명점 등 즉시 필터링)", ""
+  )
+
+  sample_branches = ["강남점", "건대점", "경기광주점", "광교점", "광명점", "신촌점"]
+  filtered_branches = [
+      b for b in sample_branches if search_branch in b
+  ] or sample_branches
+
+  st.markdown("📌 **지점 선택 목록 (가나다순)**")
+  cols = st.columns(3)
+  for idx, branch in enumerate(filtered_branches):
+    with cols[idx % 3]:
+      if st.button(f"🏥 {branch}", use_container_width=True):
+        st.session_state["selected_branch_detail"] = branch
+
+  # 선택된 지점 장비 상세 영역
+  current_selected = st.session_state.get(
+      "selected_branch_detail", "유앤아이 강남점"
+  )
+  st.markdown("---")
+  st.subheader(f"🛠️ [{current_selected}] 장비 분류별 상세 현황")
+
+  branch_eq_df = pd.DataFrame([
+      {
+          "분류": "리프팅",
+          "장비명": "울쎄라피 프라임",
+          "수량": 2,
+          "입고일": "2026-01-10",
+          "비고": "정품 장비 단독 사용",
+      },
+      {
+          "분류": "주사 시술",
+          "장비명": "영국산 보톡스",
+          "수량": 5,
+          "입고일": "2026-03-15",
+          "비고": "디스포트 명칭 언급금지 반영",
+      },
+  ])
+  st.data_editor(branch_eq_df, use_container_width=True)
 
 
 elif menu_option == "☕ 카페 목록 관리":
@@ -223,19 +251,14 @@ elif menu_option == "📋 원고 보드":
     sel_branch = st.selectbox(
         "지점 선택", ["건대점", "유앤아이 강남점", "블루비뇨기과 신촌점"]
     )
-    st.markdown(
-        "📌 **담당자:** 이선주 | **작가:** 장은하 | **진행상황:** 18 / 20"
-        "[cite: 13]"
-    )
+    st.markdown("📌 **담당자:** 이선주 | **작가:** 장은하 | **진행상황:** 18 / 20[cite: 13]")
   with col_top2:
     with st.expander("📝 원고 재료 패널 (접고 펼치기 가능)", expanded=True):
       st.markdown(
           "**발행 요청사항:** 자연스러운 볼륨감 강조 | **경쟁사 대비 장점:** 프라임"
           " 정품 장비 단독 사용[cite: 13]"
       )
-      st.markdown(
-          "**보유장비 목록:** 울쎄라피 프라임, 슈링크, 리쥬란[cite: 13]"
-      )
+      st.markdown("**보유장비 목록:** 울쎄라피 프라임, 슈링크, 리쥬란[cite: 13]")
 
   st.markdown("---")
 
@@ -395,19 +418,41 @@ elif menu_option == "📝 단건 원고 작성":
 elif menu_option == "🚀 실행사 발행 및 AS 관리":
   st.title("🚀 실행사 발행 및 AS / 카페 계정 관리")
   st.markdown(
-      "실행사가 직접 등록·변경하는 카페 계정 목록 관리, 중복 체크(10일/40개"
-      " 제한), 그리고 발행 후 AS를 관리합니다."
+      "실행사가 직접 카페 계정을 등록·교체·관리하고, 10일 및 월 40개 제한을"
+      " 체크하며, 발행 후 AS를 관리합니다[cite: 14]."
   )
 
   tab_ex1, tab_ex2, tab_ex3, tab_ex4 = st.tabs(
-      ["☕ 카페/댓글 발행", "🔒 계정 사용 체크", "👤 카페 계정 목록", "🛠️ 발행 후 AS 관리"]
+      ["🔑 카페 계정 관리 (실행사)", "☕ 카페/댓글 발행", "🔒 계정 사용 체크", "🛠️ 발행 후 AS 관리"]
   )
 
   with tab_ex1:
     st.subheader(
-        "📌 오늘 발행할 지점 목록 (하루 3지점 자동 배정 및 실행사 뷰)"
-        "[cite: 13]"
+        "📌 실행사 직접 카페 계정 등록 및 교체 (중복 검사 및 상태 관리)"
+        "[cite: 14]"
     )
+    account_reg_df = pd.DataFrame([
+        {
+            "카페 아이디": "id_001",
+            "닉네임": "뷰티스타",
+            "용도": "카페 침투 / 댓글 침투",
+            "상태": "사용 중",
+            "메모": "메인 계정",
+        },
+        {
+            "카페 아이디": "id_002",
+            "닉네임": "헬스토커",
+            "용도": "카페 침투",
+            "상태": "제재·정지",
+            "메모": "보조 계정",
+        },
+    ])
+    st.data_editor(account_reg_df, use_container_width=True)
+    if st.button("➕ 새 계정 등록 및 중복 검사 실행"):
+      st.success("계정이 정상적으로 등록 및 검증되었습니다.")
+
+  with tab_ex2:
+    st.subheader("📌 오늘 발행할 지점 목록 (하루 3지점 자동 배정)")
     pub_df = pd.DataFrame([{
         "발행 예정일": "오늘 (D-0)",
         "지점": "건대점",
@@ -419,7 +464,7 @@ elif menu_option == "🚀 실행사 발행 및 AS 관리":
     if st.button("📤 지점 단위 '기입 완료 확인 요청' 전송"):
       st.success("지점 담당자에게 확인 요청이 전달되었습니다.")
 
-  with tab_ex2:
+  with tab_ex3:
     st.subheader("🔒 계정 사용 가능 여부 자동 체크")
     acc_check_df = pd.DataFrame([
         {
@@ -430,32 +475,6 @@ elif menu_option == "🚀 실행사 발행 및 AS 관리":
         }
     ])
     st.dataframe(acc_check_df, use_container_width=True)
-
-  with tab_ex3:
-    st.subheader("👤 카페 계정 목록 관리 (실행사 직접 등록 및 변경)")
-    st.markdown(
-        "실행사가 직접 아이디, 닉네임, 용도, 상태(사용 중/교체됨/제재·정지)를"
-        " 관리하며, 동일 아이디 중복 등록을 자동으로 확인합니다."
-    )
-    account_manage_df = pd.DataFrame([
-        {
-            "카페 아이디": "id_001",
-            "닉네임": "뷰티러버",
-            "용도": "카페 침투",
-            "상태": "사용 중",
-            "메모": "메인 계정",
-        },
-        {
-            "카페 아이디": "id_002",
-            "닉네임": "헬스맨",
-            "용도": "댓글 침투",
-            "상태": "제재·정지",
-            "메모": "사용 금지",
-        },
-    ])
-    st.data_editor(account_manage_df, use_container_width=True)
-    if st.button("➕ 새 계정 등록 및 중복 체크 실행"):
-      st.success("계정이 정상적으로 등록되었으며 중복 검사가 완료되었습니다.")
 
   with tab_ex4:
     st.subheader("🛠️ 발행 후 AS 목록 (삭제·댓글 미완료·조회수 부족)")
