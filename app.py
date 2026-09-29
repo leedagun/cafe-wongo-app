@@ -4,7 +4,7 @@ import streamlit as st
 
 # 웹페이지 기본 설정
 st.set_page_config(
-    page_title="마케팅 통합 관리 프로그램", page_icon="🚀", layout="wide"
+    page_title="마케팅 자동화 프로그램", page_icon="🚀", layout="wide"
 )
 
 # 세션 스테이트 초기화
@@ -15,10 +15,8 @@ if "current_month" not in st.session_state:
 if "user_role" not in st.session_state:
   st.session_state.user_role = "관리자"
 
-role = "관리자"
-
 # =========================================================
-# 사이드바 메뉴 구성
+# 사이드바 메뉴 및 권한(역할) 설정
 # =========================================================
 st.sidebar.title("📌 통합 대시보드")
 st.sidebar.markdown("---")
@@ -27,6 +25,25 @@ st.sidebar.markdown(f"📅 **운영 월 선택**: `{st.session_state.current_mon
 if st.sidebar.button("🔄 [다음 달 시작] 이월 및 틀 생성", use_container_width=True):
   st.sidebar.success("✨ 다음 달로 이월 및 지점별 20건 틀이 생성되었습니다.")
 
+st.sidebar.markdown("---")
+
+# 요청하신 사용자 권한(역할) 선택 영역 추가
+st.sidebar.markdown("🔒 **사용자 권한(역할)**")
+st.session_state.user_role = st.sidebar.selectbox(
+    "현재 접속자 역할",
+    [
+        "관리자",
+        "지점 담당자 (유앤아이·블루비뇨기과)",
+        "원고 작가",
+        "게시판 담당",
+        "실행사 (1곳)",
+        "원장님 (로컬 지점)",
+    ],
+    index=0,
+    key="role_select",
+)
+
+role = st.session_state.user_role
 st.sidebar.markdown("---")
 
 
@@ -49,10 +66,8 @@ menu_btn("☕ 카페 목록 관리", "☕ 카페 목록 관리")
 menu_btn("📋 원고 보드 (작성·검수·컨펌)", "📋 원고 보드")
 menu_btn("💬 댓글 침투 관리", "💬 댓글 침투 관리")
 menu_btn("📝 단건 원고 작성", "📝 단건 원고 작성")
-op_role = st.sidebar.selectbox(
-    "🔒 발행/운영 권한 선택", ["관리자/담당자", "실행사 전용 화면"]
-)
-if op_role == "실행사 전용 화면":
+
+if role == "실행사 (1곳)":
   menu_btn("🚀 실행사 발행 및 AS 관리", "🚀 실행사 발행 및 AS 관리")
 else:
   menu_btn("📊 통합 작업 현황 보고서", "📊 통합 보고서")
@@ -64,13 +79,13 @@ menu_option = st.session_state.menu_option
 
 
 # =========================================================
-# 1. 홈 (대시보드) 화면
+# 화면 분기 및 렌더링
 # =========================================================
 if menu_option == "🏠 홈 (대시보드)":
   st.title("🏠 마케팅 통합 관리 홈 (대시보드)")
   st.markdown(
-      f"현재 운영 월: **{st.session_state.current_month}** | 블루비뇨기과"
-      " 스타일 전체 현황판"
+      f"현재 운영 월: **{st.session_state.current_month}** | 현재 접속 권한:"
+      f" **{role}**"
   )
 
   col1, col2, col3, col4 = st.columns(4)
@@ -105,9 +120,6 @@ if menu_option == "🏠 홈 (대시보드)":
   st.dataframe(status_board_df, use_container_width=True)
 
 
-# =========================================================
-# 2. 지점 및 장비 관리 화면
-# =========================================================
 elif menu_option == "🏢 지점 및 장비 관리":
   st.title("🏢 지점 및 보유 장비 관리")
   st.markdown(
@@ -132,9 +144,6 @@ elif menu_option == "🏢 지점 및 장비 관리":
   st.data_editor(branch_setting_df, use_container_width=True)
 
 
-# =========================================================
-# 3. 카페 목록 관리 화면
-# =========================================================
 elif menu_option == "☕ 카페 목록 관리":
   st.title("☕ 카페 목록 및 지점·댓글침투용 연결 관리")
   st.markdown(
@@ -163,9 +172,6 @@ elif menu_option == "☕ 카페 목록 관리":
   st.data_editor(cafe_manage_df, use_container_width=True)
 
 
-# =========================================================
-# 4. 원고 보드 (작성·검수·컨펌 통합) 화면
-# =========================================================
 elif menu_option == "📋 원고 보드":
   st.title("📋 통합 원고 보드 (작성·자동 검수·컨펌)")
   st.markdown(
@@ -225,9 +231,6 @@ elif menu_option == "📋 원고 보드":
     )
 
 
-# =========================================================
-# 5. 댓글 침투 관리 화면
-# =========================================================
 elif menu_option == "💬 댓글 침투 관리":
   st.title("💬 댓글 침투 대상 글 수집 및 관리")
   st.markdown(
@@ -262,9 +265,6 @@ elif menu_option == "💬 댓글 침투 관리":
         st.warning("URL을 입력해주세요.")
 
 
-# =========================================================
-# 6. 단건 원고 작성 화면
-# =========================================================
 elif menu_option == "📝 단건 원고 작성":
   st.title("📝 단건 원고 작성기")
   st.markdown(
@@ -292,9 +292,6 @@ elif menu_option == "📝 단건 원고 작성":
       st.warning("키워드를 입력해주세요.")
 
 
-# =========================================================
-# 7. 실행사 발행 및 AS 관리 화면 (계정 사용 체크 포함)
-# =========================================================
 elif menu_option == "🚀 실행사 발행 및 AS 관리":
   st.title("🚀 실행사 발행 및 AS / 계정 사용 관리")
   st.markdown(
@@ -348,9 +345,6 @@ elif menu_option == "🚀 실행사 발행 및 AS 관리":
     st.dataframe(as_df, use_container_width=True)
 
 
-# =========================================================
-# 8. 통합 보고서 화면
-# =========================================================
 elif menu_option == "📊 통합 보고서":
   st.title("📊 통합 작업 현황 보고서 및 컨펌 흐름")
   st.markdown(
