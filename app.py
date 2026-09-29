@@ -64,7 +64,7 @@ def menu_btn(label, target_menu):
 
 st.sidebar.markdown("📌 **메뉴 선택**")
 
-# 역할별 메뉴 제한 설정
+# 역할별 메뉴 제한 설정 (실행사 메뉴에 카페 계정 관리 추가 반영)
 if role == "관리자":
   menu_btn("🏠 홈 (대시보드)", "🏠 홈 (대시보드)")
   menu_btn("🏢 지점 및 장비 관리", "🏢 지점 및 장비 관리")
@@ -119,7 +119,7 @@ elif role == "원장님 (로컬 지점)":
   menu_btn("📊 통합 작업 현황 보고서", "📊 통합 보고서")
 
 st.sidebar.markdown("---")
-st.sidebar.caption("🚀 마케팅 통합 관리 프로그램 v2.3")
+st.sidebar.caption("🚀 마케팅 통합 관리 프로그램 v2.4")
 
 menu_option = st.session_state.menu_option
 
@@ -133,7 +133,6 @@ if menu_option == "🏠 홈 (대시보드)":
       f"현재 운영 월: **{st.session_state.current_month}** | 접속 역할: **{role}**"
   )
 
-  # 상단 긴급 확인 줄 (마감 기한 및 지연 건수 반영)[cite: 13]
   st.markdown("🚨 **[지금 확인할 것]**")
   col_chk1, col_chk2, col_chk3, col_chk4 = st.columns(4)
   col_chk1.metric("키워드 미입력 지점", "2곳", "확인 필요")
@@ -143,11 +142,6 @@ if menu_option == "🏠 홈 (대시보드)":
 
   st.markdown("---")
   st.subheader("📌 담당자별 카드 현황 (8명 기준)")
-  st.markdown(
-      "지점 50개를 담당자 8명 기준으로 묶어 진행률 및 지연 상태를 보여줍니다"
-      "[cite: 13]."
-  )
-
   c1, c2, c3, c4 = st.columns(4)
   with c1:
     st.info("**김담당 (사수)**\n\n- 담당 지점: 8곳\n- 진행률: 150/160 (93%)\n- 상태: 정상")
@@ -168,8 +162,6 @@ elif menu_option == "🏢 지점 및 장비 관리":
       "지점명을 2열로 나열하고 장비 분류별(리스트업된 표준 장비)로 묶어 관리합니다"
       "[cite: 13]."
   )
-
-  branch_search = st.text_input("🔍 지점 또는 장비명으로 검색")
 
   col_b1, col_b2 = st.columns(2)
   with col_b1:
@@ -222,7 +214,6 @@ elif menu_option == "📋 원고 보드":
       " 보이고, 오른쪽에서 본문과 대화형 댓글 상세 패널을 확인합니다[cite: 13]."
   )
 
-  # 보기 전환 탭 (표 보기 / 카페 미리보기)[cite: 13]
   view_mode = st.radio(
       "보기 전환", ["📊 표 보기 (20건 일괄 편집)", "☕ 카페 미리보기 (카드 뷰)"], horizontal=True
   )
@@ -402,14 +393,14 @@ elif menu_option == "📝 단건 원고 작성":
 
 
 elif menu_option == "🚀 실행사 발행 및 AS 관리":
-  st.title("🚀 실행사 발행 및 AS / 계정 사용 관리")
+  st.title("🚀 실행사 발행 및 AS / 카페 계정 관리")
   st.markdown(
-      "하루 3지점 자동 배정 발행 예정일 준수 여부 및 AS(삭제·댓글"
-      " 미완료·조회수 부족)를 관리합니다[cite: 13]."
+      "실행사가 직접 등록·변경하는 카페 계정 목록 관리, 중복 체크(10일/40개"
+      " 제한), 그리고 발행 후 AS를 관리합니다."
   )
 
-  tab_ex1, tab_ex2, tab_ex3 = st.tabs(
-      ["☕ 카페/댓글 발행", "🔒 계정 사용 체크", "🛠️ 발행 후 AS 관리"]
+  tab_ex1, tab_ex2, tab_ex3, tab_ex4 = st.tabs(
+      ["☕ 카페/댓글 발행", "🔒 계정 사용 체크", "👤 카페 계정 목록", "🛠️ 발행 후 AS 관리"]
   )
 
   with tab_ex1:
@@ -441,6 +432,32 @@ elif menu_option == "🚀 실행사 발행 및 AS 관리":
     st.dataframe(acc_check_df, use_container_width=True)
 
   with tab_ex3:
+    st.subheader("👤 카페 계정 목록 관리 (실행사 직접 등록 및 변경)")
+    st.markdown(
+        "실행사가 직접 아이디, 닉네임, 용도, 상태(사용 중/교체됨/제재·정지)를"
+        " 관리하며, 동일 아이디 중복 등록을 자동으로 확인합니다."
+    )
+    account_manage_df = pd.DataFrame([
+        {
+            "카페 아이디": "id_001",
+            "닉네임": "뷰티러버",
+            "용도": "카페 침투",
+            "상태": "사용 중",
+            "메모": "메인 계정",
+        },
+        {
+            "카페 아이디": "id_002",
+            "닉네임": "헬스맨",
+            "용도": "댓글 침투",
+            "상태": "제재·정지",
+            "메모": "사용 금지",
+        },
+    ])
+    st.data_editor(account_manage_df, use_container_width=True)
+    if st.button("➕ 새 계정 등록 및 중복 체크 실행"):
+      st.success("계정이 정상적으로 등록되었으며 중복 검사가 완료되었습니다.")
+
+  with tab_ex4:
     st.subheader("🛠️ 발행 후 AS 목록 (삭제·댓글 미완료·조회수 부족)")
     as_df = pd.DataFrame([
         {
