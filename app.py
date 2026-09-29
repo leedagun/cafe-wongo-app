@@ -11,7 +11,7 @@ st.set_page_config(
 if "menu_option" not in st.session_state:
   st.session_state.menu_option = "🏠 홈 (대시보드)"
 if "current_month" not in st.session_state:
-  st.session_state.current_month = "2026년 6월"
+  st.session_state.current_month = "2026년 10월"
 if "user_role" not in st.session_state:
   st.session_state.user_role = "관리자"
 
@@ -24,6 +24,9 @@ st.sidebar.markdown("---")
 st.sidebar.markdown(f"📅 **운영 월 선택**: `{st.session_state.current_month}`")
 if st.sidebar.button("🔄 [다음 달 시작] 이월 및 틀 생성", use_container_width=True):
   st.sidebar.success("✨ 다음 달로 이월 및 지점별 20건 틀이 생성되었습니다.")
+
+if st.sidebar.button("📥 배정 시트에서 지점 담당자 자동 동기화", use_container_width=True):
+  st.sidebar.success("✨ 배정 시트 연동 완료: 변경 8건 반영")
 
 st.sidebar.markdown("---")
 
@@ -68,6 +71,7 @@ if role == "관리자":
   menu_btn("☕ 카페 목록 관리", "☕ 카페 목록 관리")
   menu_btn("📋 원고 보드 (작성·검수·컨펌)", "📋 원고 보드")
   menu_btn("💬 댓글 침투 관리", "💬 댓글 침투 관리")
+  menu_btn("🎨 AI 이미지 보관함", "🎨 AI 이미지 보관함")
   menu_btn("📝 단건 원고 작성", "📝 단건 원고 작성")
   menu_btn("🚀 실행사 발행 및 AS 관리", "🚀 실행사 발행 및 AS 관리")
   menu_btn("📊 통합 작업 현황 보고서", "📊 통합 보고서")
@@ -78,23 +82,18 @@ elif role == "지점 담당자 (유앤아이·블루비뇨기과)":
   menu_btn("📊 통합 작업 현황 보고서", "📊 통합 보고서")
 
 elif role == "원고 작가":
-  if st.session_state.menu_option in [
-      "🏠 홈 (대시보드)",
-      "🏢 지점 및 장비 관리",
-      "☕ 카페 목록 관리",
-      "💬 댓글 침투 관리",
-      "🚀 실행사 발행 및 AS 관리",
-      "📊 통합 보고서",
+  if st.session_state.menu_option not in [
+      "📋 원고 보드",
+      "🎨 AI 이미지 보관함",
+      "📝 단건 원고 작성",
   ]:
     st.session_state.menu_option = "📋 원고 보드"
   menu_btn("📋 원고 보드 (작성·검수·컨펌)", "📋 원고 보드")
+  menu_btn("🎨 AI 이미지 보관함", "🎨 AI 이미지 보관함")
   menu_btn("📝 단건 원고 작성", "📝 단건 원고 작성")
 
 elif role == "게시판 담당":
-  if st.session_state.menu_option not in [
-      "🏠 홈 (대시보드)",
-      "📋 원고 보드",
-  ]:
+  if st.session_state.menu_option not in ["🏠 홈 (대시보드)", "📋 원고 보드"]:
     st.session_state.menu_option = "🏠 홈 (대시보드)"
   menu_btn("🏠 홈 (대시보드)", "🏠 홈 (대시보드)")
   menu_btn("📋 원고 보드 (작성·검수·컨펌)", "📋 원고 보드")
@@ -103,12 +102,14 @@ elif role == "실행사 (1곳)":
   if st.session_state.menu_option not in [
       "🏠 홈 (대시보드)",
       "💬 댓글 침투 관리",
+      "🎨 AI 이미지 보관함",
       "🚀 실행사 발행 및 AS 관리",
       "📊 통합 보고서",
   ]:
     st.session_state.menu_option = "🚀 실행사 발행 및 AS 관리"
   menu_btn("🏠 홈 (대시보드)", "🏠 홈 (대시보드)")
   menu_btn("💬 댓글 침투 관리", "💬 댓글 침투 관리")
+  menu_btn("🎨 AI 이미지 보관함", "🎨 AI 이미지 보관함")
   menu_btn("🚀 실행사 발행 및 AS 관리", "🚀 실행사 발행 및 AS 관리")
   menu_btn("📊 통합 작업 현황 보고서", "📊 통합 보고서")
 
@@ -118,7 +119,7 @@ elif role == "원장님 (로컬 지점)":
   menu_btn("📊 통합 작업 현황 보고서", "📊 통합 보고서")
 
 st.sidebar.markdown("---")
-st.sidebar.caption("🚀 마케팅 통합 관리 프로그램 v2.0")
+st.sidebar.caption("🚀 마케팅 통합 관리 프로그램 v2.1")
 
 menu_option = st.session_state.menu_option
 
@@ -129,67 +130,61 @@ menu_option = st.session_state.menu_option
 if menu_option == "🏠 홈 (대시보드)":
   st.title("🏠 마케팅 통합 관리 홈 (대시보드)")
   st.markdown(
-      f"현재 운영 월: **{st.session_state.current_month}** | 현재 접속 역할:"
-      f" **{role}** (보는 범위: 내 담당만 보기 필터 적용)"
+      f"현재 운영 월: **{st.session_state.current_month}** | 접속 역할: **{role}**"
   )
 
+  # 상단 카드형 요약 (지점 50개 기준 담당자 8명 뷰 시뮬레이션)
   col1, col2, col3, col4 = st.columns(4)
-  col1.metric("이번 달 목표 원고", "880건", "진행중")
-  col2.metric("작성 완료", "640건", "+45건")
-  col3.metric("검수 대기 / 위반", "12건", "-3건")
-  col4.metric("절약된 시간", "142시간", "자동 집계")
+  col1.metric("지금 확인할 것 (AS/피드백)", "5건", "긴급")
+  col2.metric("키워드 미입력 지점", "2곳", "확인 필요")
+  col3.metric("이번 달 원고 진행률", "640 / 880건", "진행중")
+  col4.metric("자동 집계 처리 건수", "1,240건", "완료")
 
   st.markdown("---")
-  st.subheader("📌 지점별 진행상황 및 유형별 피드백 현황")
+  st.subheader("📌 담당자별 카드 현황 (8명 기준)")
 
-  status_board_df = pd.DataFrame([
+  manager_cards = pd.DataFrame([
       {
-          "지점명": "유앤아이 강남점",
-          "담당자": "김담당",
-          "작가": "김작가",
-          "진행상황": "20 / 20",
-          "정보성(10)": "완료",
-          "후기성(9)": "검수 대기",
-          "슈퍼세트(1)": "작성 중",
+          "담당자": "김담당 (사수)",
+          "담당 지점 수": "8곳",
+          "원고 진행률": "150 / 160",
+          "피드백 대기": "2건",
+          "AS 대기": "0건",
+          "상태": "정상",
       },
       {
-          "지점명": "블루비뇨기과 신촌점",
-          "담당자": "박담당",
-          "작가": "이작가",
-          "진행상황": "18 / 20",
-          "정보성(10)": "완료",
-          "후기성(9)": "피드백",
-          "슈퍼세트(1)": "완료",
+          "담당자": "박담당 (부사수)",
+          "담당 지점 수": "6곳",
+          "원고 진행률": "95 / 120",
+          "피드백 대기": "4건",
+          "AS 대기": "1건",
+          "상태": "주의",
       },
   ])
-  st.dataframe(status_board_df, use_container_width=True)
+  st.dataframe(manager_cards, use_container_width=True)
 
 
 elif menu_option == "🏢 지점 및 장비 관리":
   st.title("🏢 지점 및 보유 장비 관리")
-  if role == "지점 담당자 (유앤아이·블루비뇨기과)":
-    st.info(
-        "💡 [지점 담당자 전용 범위] 담당 지점의 보유 장비 수정 및 월별 키워드"
-        " 입력이 가능합니다."
-    )
-  else:
-    st.markdown(
-        "병원 구분(유앤아이/블루비뇨기과/로컬), 원고 재료 칸(장비 비고 규칙,"
-        " 금지 주제 등)을 관리합니다."
-    )
+  st.markdown(
+      "병원 구분, 보유 장비 사전, 그리고 원고 재료 칸(발행 요청사항, 경쟁사"
+      " 대비 장점, 지점별 주의사항)을 관리합니다."
+  )
 
   branch_setting_df = pd.DataFrame([
       {
           "지점명": "유앤아이 강남점",
           "병원 구분": "유앤아이",
-          "보유 장비 / 재료": "영국산 보톡스, 슈링크",
-          "지점별 주의사항": "특정 수술 언급 금지",
+          "보유 장비": "영국산 보톡스, 슈링크",
+          "발행 요청사항": "자연스러운 볼륨감 강조",
+          "주의사항": "과장 광고 문구 금지",
       },
       {
           "지점명": "블루비뇨기과 신촌점",
           "병원 구분": "블루비뇨기과",
-          "보유 장비 / 재료": "I-MOVE 쇄석기",
-          "지점별 주의사항": "정관수술, 포경수술 등 수술은 진행하지 않음",
+          "보유 장비": "I-MOVE 쇄석기",
+          "발행 요청사항": "전문적인 비뇨기 진료 강조",
+          "주의사항": "정관수술, 포경수술 등 수술은 진행하지 않음",
       },
   ])
   st.data_editor(branch_setting_df, use_container_width=True)
@@ -216,7 +211,7 @@ elif menu_option == "☕ 카페 목록 관리":
           "유형": "2030뷰티",
           "규모": "대형",
           "단가": "기본",
-          "상태": "주의",
+          "상태": "주의 (삭제율 높음)",
           "댓글침투용": "O",
       },
   ])
@@ -225,17 +220,10 @@ elif menu_option == "☕ 카페 목록 관리":
 
 elif menu_option == "📋 원고 보드":
   st.title("📋 통합 원고 보드 (작성·자동 검수·컨펌)")
-  if role == "원고 작가":
-    st.info(
-        "💡 [원고 작가 전용 범위] 배정된 원고만 확인하고 작성 및 피드백 반영을"
-        " 수행합니다."
-    )
-  else:
-    st.markdown(
-        "시트 없이 프로그램 안에서 월별·지점별 20건 틀을 관리하고, 저장 시"
-        " 자동 검수(금칙어, 장비규칙, 지난 3개월 중복 검사)가 바로"
-        " 실행됩니다."
-    )
+  st.markdown(
+      "시트 없이 월별·지점별 20건 틀을 관리하고, 저장 시 자동 검수(금칙어,"
+      " 장비규칙, 지난 3개월 유사 문장 검사)가 바로 실행됩니다."
+  )
 
   col_s1, col_s2 = st.columns(2)
   with col_s1:
@@ -266,24 +254,15 @@ elif menu_option == "📋 원고 보드":
           "제목": "내돈내산 솔직 후기 공유해요",
           "작성자": "김작가",
           "상태": "피드백",
-          "자동검수 결과": "장비 규칙 위반 (미보유 장비 언급)",
-          "중복 검사": "유사 문장 발견",
-      },
-      {
-          "행": 20,
-          "유형": "슈퍼세트",
-          "제목": "종합 패키지 안내",
-          "작성자": "김작가",
-          "상태": "검수 대기",
-          "자동검수 결과": "검수 대기 중",
-          "중복 검사": "대기",
+          "자동검수 결과": "장비 규칙 위반",
+          "중복 검사": "지난 3개월 원고와 유사 문장 발견",
       },
   ])
-  edited_board = st.data_editor(wongo_board_df, use_container_width=True)
+  st.data_editor(wongo_board_df, use_container_width=True)
 
   if st.button("🚀 선택 원고 저장 및 자동 검수 즉시 실행"):
     st.success(
-        "✨ 원고가 저장되었으며, 자동 검수 및 지난 3개월 유사 문장 검사가"
+        "✨ 원고가 저장되었으며, 자동 검수 및 지난 3개월 중복 검사가"
         " 완료되었습니다."
     )
 
@@ -305,7 +284,7 @@ elif menu_option == "💬 댓글 침투 관리":
             "카페명": "여우야",
             "게시글 제목": "여기 후기 좀 알려주세요",
             "댓글 가능 여부": "가능",
-            "수집일시": "2026-06-07 14:00",
+            "수집일시": "2026-10-01 14:00",
         }
     ])
     st.dataframe(comment_target_df, use_container_width=True)
@@ -320,6 +299,50 @@ elif menu_option == "💬 댓글 침투 관리":
         st.success("✨ 정상적으로 등록되었습니다 (중복 URL 자동 차단).")
       else:
         st.warning("URL을 입력해주세요.")
+
+
+elif menu_option == "🎨 AI 이미지 보관함":
+  st.title("🎨 AI 이미지 보관함 및 원고 배치 관리")
+  st.markdown(
+      "최종 컨펌된 AI 이미지를 업로드하고, 원고 보드에서 원고마다 이미지를"
+      " 배치한 뒤 실행사가 한 번에 다운로드할 수 있습니다."
+  )
+
+  img_tab1, img_tab2 = st.tabs(["📦 이미지 보관함", "🔗 원고별 이미지 배치"])
+
+  with img_tab1:
+    st.subheader("📌 최종 컨펌된 AI 이미지 업로드")
+    uploaded_files = st.file_uploader(
+        "이미지 파일 여러 장 업로드", type=["png", "jpg", "jpeg"], accept_multiple_files=True
+    )
+    if uploaded_files:
+      st.success(f"✨ 총 {len(uploaded_files)}개의 이미지가 보관함에 등록되었습니다.")
+
+    img_box_df = pd.DataFrame([
+        {
+            "이미지 파일명": "img_gangnam_01.png",
+            "지점": "유앤아이 강남점",
+            "업로드 날짜": "2026-10-01",
+            "상태": "대기 중",
+        }
+    ])
+    st.dataframe(img_box_df, use_container_width=True)
+
+  with img_tab2:
+    st.subheader("📌 원고 항목별 이미지 매칭 및 다운로드 관리")
+    st.markdown(
+        "실행사는 원고 단위로 배치된 이미지를 다운로드하며, 다운로드 완료 시"
+        " 보관함에서 자동 처리됩니다."
+    )
+    mapping_df = pd.DataFrame([
+        {
+            "지점": "유앤아이 강남점",
+            "원고 제목": "환절기 피부 관리",
+            "배치된 이미지": "img_gangnam_01.png",
+            "다운로드 상태": "실행사 다운로드 대기",
+        }
+    ])
+    st.dataframe(mapping_df, use_container_width=True)
 
 
 elif menu_option == "📝 단건 원고 작성":
@@ -351,16 +374,10 @@ elif menu_option == "📝 단건 원고 작성":
 
 elif menu_option == "🚀 실행사 발행 및 AS 관리":
   st.title("🚀 실행사 발행 및 AS / 계정 사용 관리")
-  if role == "실행사 (1곳)":
-    st.warning(
-        "🔒 [실행사 전용 범위] 완료된 원고 및 자기가 기입한 보고서만 보이며,"
-        " 발행 처리, 보고서 기입, 수정 요청 처리, 이슈 보고가 가능합니다."
-    )
-  else:
-    st.markdown(
-        "카페 침투·댓글 침투 발행, 계정 사용 체크(10일/40개 제한), 그리고 발행 후"
-        " AS(삭제·댓글 미완료·조회수 부족)를 관리합니다."
-    )
+  st.markdown(
+      "카페 침투·댓글 침투 발행, 계정 사용 체크(10일/40개 제한), 그리고 발행 후"
+      " AS(삭제·댓글 미완료·조회수 부족)를 관리합니다."
+  )
 
   tab_ex1, tab_ex2, tab_ex3 = st.tabs(
       ["☕ 카페/댓글 발행", "🔒 계정 사용 체크", "🛠️ 발행 후 AS 관리"]
@@ -410,32 +427,27 @@ elif menu_option == "🚀 실행사 발행 및 AS 관리":
 
 elif menu_option == "📊 통합 보고서":
   st.title("📊 통합 작업 현황 보고서 및 컨펌 흐름")
-  if role == "원장님 (로컬 지점)":
-    st.info(
-        "💡 [원장님 전용 범위] 해당 지점 원고만 확인하며, 로그인 없는 확인 링크로"
-        " 확인 또는 수정 요청을 진행합니다."
-    )
-  elif role == "지점 담당자 (유앤아이·블루비뇨기과)":
-    st.info(
-        "💡 [지점 담당자 전용 범위] 담당 지점의 보고서 확인과 수정 요청을"
-        " 처리합니다."
-    )
-  else:
-    st.markdown(
-        "실행사 기입 ➔ 관리자 1차 확인 ➔ 지점 담당자 확인(수정 요청 바로"
-        " 전달) ➔ 관리자 최종본 확정 흐름을 관리합니다."
+  st.markdown(
+      "보고일에 버튼 하나로 병원별(유앤아이, 블루비뇨기과, 로컬) 구글 시트"
+      " 보고서를 생성합니다."
+  )
+
+  if st.button("📊 [보고서 만들기] 구글 시트 보고서 생성 및 내보내기"):
+    st.success(
+        "✨ 이번 달 데이터로 병원별 구글 시트 보고서가 성공적으로 생성 및"
+        " 갱신되었습니다."
     )
 
   report_main_df = pd.DataFrame([
       {
           "지점": "유앤아이 강남점",
-          "발행일": "2026-06-07",
+          "발행일": "2026-10-01",
           "카페명": "맘스홀릭",
           "상태": "지점 담당자 확인 완료 (이상 없음)",
       },
       {
           "지점": "블루비뇨기과 신촌점",
-          "발행일": "2026-06-07",
+          "발행일": "2026-10-01",
           "카페명": "세클맘",
           "상태": "수정 요청 진행 중 (실행사 반영 대기)",
       },
