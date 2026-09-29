@@ -24,7 +24,6 @@ if "user_role" not in st.session_state:
 st.sidebar.title("📌 통합 대시보드")
 st.sidebar.markdown("---")
 
-# 6가지 권한 역할 지정 (이미지 표 기준)[cite: 5]
 st.sidebar.markdown("🔒 **사용자 권한(역할)**")
 st.session_state.user_role = st.sidebar.selectbox(
     "현재 접속자 역할",
@@ -41,21 +40,9 @@ st.session_state.user_role = st.sidebar.selectbox(
 )
 
 role = st.session_state.user_role
-
-# 권한별 보는 범위 안내[cite: 5]
-scope_dict = {
-    "관리자": "전체 보기 (배정, 컨펌, 기준 정보 관리)",
-    "지점 담당자 (유앤아이·블루비뇨기과)": "담당 지점만 (보유장비 수정, 키워드 입력)",
-    "원고 작가": "배정된 원고만 (작성 및 피드백 반영)",
-    "게시판 담당": "배정된 업로드 건 (업로드 완료 처리)",
-    "실행사 (1곳)": "완료된 원고 및 자기가 기입한 보고서",
-    "원장님 (로컬 지점)": "해당 지점 원고만 (확인 또는 수정 요청)",
-}
-st.sidebar.info(f"📌 **보는 범위**: {scope_dict[role]}")
 st.sidebar.markdown("---")
 
 
-# 메뉴 버튼 렌더링 함수
 def menu_btn(label, target_menu):
   is_selected = st.session_state.menu_option == target_menu
   if st.sidebar.button(
@@ -70,7 +57,6 @@ def menu_btn(label, target_menu):
 
 st.sidebar.markdown("📌 **메뉴 선택**")
 
-# 역할별 접근 가능 메뉴 제어 (원장님 역할은 홈 제외[cite: 5])
 if role == "관리자":
   menu_btn("🏠 홈 (대시보드)", "🏠 홈")
   menu_btn("🏢 지점 및 장비 관리", "🏢 지점 및 장비 관리")
@@ -103,7 +89,6 @@ elif role == "실행사 (1곳)":
   menu_btn("📊 카페 작업 현황 보고서", "📊 카페 보고서")
 
 elif role == "원장님 (로컬 지점)":
-  # 원장님 역할은 홈(대시보드) 메뉴를 제외하고 보고서/확인 링크 화면만 제공[cite: 5]
   if st.session_state.menu_option == "🏠 홈":
     st.session_state.menu_option = "📊 카페 보고서"
   menu_btn("📊 카페 작업 현황 보고서", "📊 카페 보고서")
@@ -115,13 +100,13 @@ menu_option = st.session_state.menu_option
 
 
 # =========================================================
-# 화면 분기 및 렌더링 (권한별 제한 반영)
+# 화면 분기 및 렌더링
 # =========================================================
 if menu_option == "🏠 홈":
   st.title("🏠 마케팅 통합 관리 홈 (대시보드)")
   st.markdown(
-      f"현재 접속 권한: **{role}** | 💡 모든 화면에 '내 담당만 보기' 필터가"
-      f" 적용되어 있습니다[cite: 5]."
+      f"현재 접속 권한: **{role}** | 모든 화면에 '내 담당만 보기' 필터가"
+      " 적용되어 있습니다."
   )
 
   col1, col2, col3 = st.columns(3)
@@ -144,8 +129,8 @@ elif menu_option == "🏢 지점 및 장비 관리":
   st.title("🏢 지점 및 보유 장비 관리")
   if role == "지점 담당자 (유앤아이·블루비뇨기과)":
     st.success(
-        "💡 지점 담당자 권한으로 접속하여 **보유장비 수정 및 월별 키워드 입력**이"
-        " 가능합니다[cite: 5]."
+        "💡 지점 담당자 권한으로 접속하여 보유장비 수정 및 월별 키워드 입력이"
+        " 가능합니다."
     )
   branch_df = pd.DataFrame([{
       "지점명": "유앤아이 강남점",
@@ -157,8 +142,8 @@ elif menu_option == "🏢 지점 및 장비 관리":
 elif menu_option == "☕ 카페 목록 관리":
   st.title("☕ 카페 목록 관리")
   st.warning(
-      "🔒 **관리자 전용 메뉴**: 카페 단가 및 실행사 연동 정보는 관리자만"
-      " 볼 수 있습니다[cite: 5]."
+      "🔒 관리자 전용 메뉴: 카페 단가 및 실행사 연동 정보는 관리자만 볼 수"
+      " 있습니다."
   )
   cafe_df = pd.DataFrame([{
       "카페명": "맘스홀릭 베이비",
@@ -176,7 +161,7 @@ elif menu_option == "✍️ 카페 원고 작성기":
   )
   if st.button("🚀 원고 생성 및 작성 수행"):
     if role == "원고 작가":
-      st.success("✨ 작가 권한으로 원고 작성 및 피드백 반영 완료[cite: 5]!")
+      st.success("✨ 작가 권한으로 원고 작성 및 피드백 반영 완료!")
     else:
       st.success("✨ 원고 자동 생성이 완료되었습니다.")
 
@@ -209,11 +194,10 @@ elif menu_option == "📢 체험단 모집 관리":
 elif menu_option == "📊 카페 보고서":
   st.title("📊 카페 작업 현황 보고서")
 
-  # 실행사 비공개 원칙 적용 (실행사 화면 및 외부 보고서에는 단가/아이디 등 숨김)[cite: 5]
   if role == "실행사 (1곳)":
     st.warning(
-        "🔒 **실행사 보안 원칙 적용**: 발행 처리, 보고서 기입, 수정 요청 처리"
-        " 기능만 노출됩니다 (내부 메모 및 병원 민감 정보 숨김)[cite: 5]."
+        "🔒 실행사 보안 원칙 적용: 발행 처리, 보고서 기입, 수정 요청 처리"
+        " 기능만 노출됩니다."
     )
     report_df = pd.DataFrame([{
         "발행일": "2026-06-07",
@@ -222,8 +206,8 @@ elif menu_option == "📊 카페 보고서":
     }])
   elif role == "원장님 (로컬 지점)":
     st.info(
-        "💡 **원장님 전용 확인 링크 화면**: 로그인 없이 해당 지점 원고에 대한"
-        " 확인 또는 수정 요청만 가능합니다[cite: 5]."
+        "💡 원장님 전용 확인 링크 화면: 로그인 없이 해당 지점 원고에 대한 확인"
+        " 또는 수정 요청만 가능합니다."
     )
     report_df = pd.DataFrame(
         [{"지점": "로컬 지점", "상태": "원장님 컨펌 대기중"}]
@@ -238,7 +222,6 @@ elif menu_option == "📊 카페 보고서":
 
   st.dataframe(report_df, use_container_width=True)
 
-  # 외부용 다운로드 (실행사/아이디 자동 제외 버전)[cite: 5]
   csv_data = report_df.to_csv(index=False).encode("utf-8-sig")
   st.download_button(
       "📥 외부용 보고서 다운로드 (실행사/아이디 제외)",
