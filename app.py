@@ -8,21 +8,38 @@ st.set_page_config(
     page_title="마케팅 자동화 프로그램", page_icon="🚀", layout="wide"
 )
 
-# 세션 스테이트 초기화 (역할은 관리자로 고정)
+# 세션 스테이트 초기화
 if "menu_option" not in st.session_state:
   st.session_state.menu_option = "🏠 홈"
 if "preview_data" not in st.session_state:
   st.session_state.preview_data = None
 if "action_type" not in st.session_state:
   st.session_state.action_type = None
-
-# 고정 권한 (관리자)
-role = "관리자"
+if "user_role" not in st.session_state:
+  st.session_state.user_role = "관리자"
 
 # =========================================================
-# 사이드바 메뉴 구성
+# 사이드바 메뉴 및 권한(역할) 설정
 # =========================================================
 st.sidebar.title("📌 통합 대시보드")
+st.sidebar.markdown("---")
+
+st.sidebar.markdown("🔒 **사용자 권한(역할)**")
+st.session_state.user_role = st.sidebar.selectbox(
+    "현재 접속자 역할",
+    [
+        "관리자",
+        "지점 담당자 (유앤아이·블루비뇨기과)",
+        "원고 작가",
+        "게시판 담당",
+        "실행사 (1곳)",
+        "원장님 (로컬 지점)",
+    ],
+    index=0,
+    key="role_select",
+)
+
+role = st.session_state.user_role
 st.sidebar.markdown("---")
 
 
@@ -40,17 +57,41 @@ def menu_btn(label, target_menu):
 
 st.sidebar.markdown("📌 **메뉴 선택**")
 
-# 관리자 기준 전체 메뉴 노출
-menu_btn("🏠 홈 (대시보드)", "🏠 홈")
-menu_btn("🏢 지점 및 장비 관리", "🏢 지점 및 장비 관리")
-menu_btn("☕ 카페 목록 관리", "☕ 카페 목록 관리")
-menu_btn("✍️ 카페 원고 작성기", "✍️ 카페 원고 작성기")
-menu_btn("🔍 카페 원고 자동 검수", "🔍 카페 원고 자동 검수")
-menu_btn("🔗 카페 매칭·중복 검수", "🔗 카페 매칭·중복 검수")
-menu_btn("📝 단건 원고 작성", "📝 단건 원고 작성")
-menu_btn("📢 체험단 모집 관리", "📢 체험단 모집 관리")
-menu_btn("📊 카페 작업 현황 보고서", "📊 카페 보고서")
-menu_btn("📈 체험단 모집 현황 보고서", "📈 체험단 보고서")
+if role == "관리자":
+  menu_btn("🏠 홈 (대시보드)", "🏠 홈")
+  menu_btn("🏢 지점 및 장비 관리", "🏢 지점 및 장비 관리")
+  menu_btn("☕ 카페 목록 관리", "☕ 카페 목록 관리")
+  menu_btn("✍️ 카페 원고 작성기", "✍️ 카페 원고 작성기")
+  menu_btn("🔍 카페 원고 자동 검수", "🔍 카페 원고 자동 검수")
+  menu_btn("🔗 카페 매칭·중복 검수", "🔗 카페 매칭·중복 검수")
+  menu_btn("📝 단건 원고 작성", "📝 단건 원고 작성")
+  menu_btn("📢 체험단 모집 관리", "📢 체험단 모집 관리")
+  menu_btn("📊 카페 작업 현황 보고서", "📊 카페 보고서")
+  menu_btn("📈 체험단 모집 현황 보고서", "📈 체험단 보고서")
+
+elif role == "지점 담당자 (유앤아이·블루비뇨기과)":
+  menu_btn("🏠 홈 (대시보드)", "🏠 홈")
+  menu_btn("🏢 지점 및 장비 관리", "🏢 지점 및 장비 관리")
+  menu_btn("✍️ 카페 원고 작성기", "✍️ 카페 원고 작성기")
+  menu_btn("📊 카페 작업 현황 보고서", "📊 카페 보고서")
+
+elif role == "원고 작가":
+  menu_btn("🏠 홈 (대시보드)", "🏠 홈")
+  menu_btn("✍️ 카페 원고 작성기", "✍️ 카페 원고 작성기")
+  menu_btn("📝 단건 원고 작성", "📝 단건 원고 작성")
+
+elif role == "게시판 담당":
+  menu_btn("🏠 홈 (대시보드)", "🏠 홈")
+  menu_btn("🔗 카페 매칭·중복 검수", "🔗 카페 매칭·중복 검수")
+
+elif role == "실행사 (1곳)":
+  menu_btn("🏠 홈 (대시보드)", "🏠 홈")
+  menu_btn("📊 카페 작업 현황 보고서", "📊 카페 보고서")
+
+elif role == "원장님 (로컬 지점)":
+  if st.session_state.menu_option == "🏠 홈":
+    st.session_state.menu_option = "📊 카페 보고서"
+  menu_btn("📊 카페 작업 현황 보고서", "📊 카페 보고서")
 
 st.sidebar.markdown("---")
 st.sidebar.caption("🚀 마케팅 통합 관리 프로그램 v1.0")
@@ -63,7 +104,10 @@ menu_option = st.session_state.menu_option
 # =========================================================
 if menu_option == "🏠 홈":
   st.title("🏠 마케팅 통합 관리 홈 (대시보드)")
-  st.markdown("현재 접속 권한: **관리자** (전체 보기)")
+  st.markdown(
+      f"현재 접속 권한: **{role}** | 모든 화면에 '내 담당만 보기' 필터가"
+      " 적용되어 있습니다."
+  )
 
   col1, col2, col3 = st.columns(3)
   col1.metric("이번 달 목표 원고", "880건", "진행중")
@@ -71,7 +115,8 @@ if menu_option == "🏠 홈":
   col3.metric("검수 대기 / 위반", "12건", "-3건")
 
   st.markdown("---")
-  st.subheader("📌 전체 진행 현황")
+  st.subheader("📌 내 할 일 (담당 범위 기준)")
+  st.info(f"현재 '{role}' 역할이 처리해야 할 항목만 필터링되었습니다.")
 
   task_df = pd.DataFrame([{
       "지점": "유앤아이 강남점",
@@ -82,6 +127,11 @@ if menu_option == "🏠 홈":
 
 elif menu_option == "🏢 지점 및 장비 관리":
   st.title("🏢 지점 및 보유 장비 관리")
+  if role == "지점 담당자 (유앤아이·블루비뇨기과)":
+    st.success(
+        "💡 지점 담당자 권한으로 접속하여 보유장비 수정 및 월별 키워드 입력이"
+        " 가능합니다."
+    )
   branch_df = pd.DataFrame([{
       "지점명": "유앤아이 강남점",
       "구분": "유앤아이",
@@ -91,6 +141,10 @@ elif menu_option == "🏢 지점 및 장비 관리":
 
 elif menu_option == "☕ 카페 목록 관리":
   st.title("☕ 카페 목록 관리")
+  st.warning(
+      "🔒 관리자 전용 메뉴: 카페 단가 및 실행사 연동 정보는 관리자만 볼 수"
+      " 있습니다."
+  )
   cafe_df = pd.DataFrame([{
       "카페명": "맘스홀릭 베이비",
       "유형": "맘",
@@ -106,7 +160,10 @@ elif menu_option == "✍️ 카페 원고 작성기":
       placeholder="https://docs.google.com/spreadsheets/d/...",
   )
   if st.button("🚀 원고 생성 및 작성 수행"):
-    st.success("✨ 원고 자동 생성이 완료되었습니다.")
+    if role == "원고 작가":
+      st.success("✨ 작가 권한으로 원고 작성 및 피드백 반영 완료!")
+    else:
+      st.success("✨ 원고 자동 생성이 완료되었습니다.")
 
 elif menu_option == "🔍 카페 원고 자동 검수":
   st.title("🔍 카페 원고 자동 검수 프로그램")
@@ -116,6 +173,8 @@ elif menu_option == "🔍 카페 원고 자동 검수":
 
 elif menu_option == "🔗 카페 매칭·중복 검수":
   st.title("🔗 카페 매칭 및 지점별 중복 검수")
+  if role == "게시판 담당":
+    st.info("💡 게시판 담당 권한: 배정된 업로드 건의 적합성을 검수합니다.")
   if st.button("🚀 매칭 검수 실행"):
     st.success("✨ 매칭 및 중복 검수 완료")
 
@@ -134,12 +193,33 @@ elif menu_option == "📢 체험단 모집 관리":
 
 elif menu_option == "📊 카페 보고서":
   st.title("📊 카페 작업 현황 보고서")
-  report_df = pd.DataFrame([{
-      "지점": "유앤아이 강남점",
-      "발행일": "2026-06-07",
-      "카페명": "맘스홀릭",
-      "상태": "지점 담당자 확인 완료",
-  }])
+
+  if role == "실행사 (1곳)":
+    st.warning(
+        "🔒 실행사 보안 원칙 적용: 발행 처리, 보고서 기입, 수정 요청 처리"
+        " 기능만 노출됩니다."
+    )
+    report_df = pd.DataFrame([{
+        "발행일": "2026-06-07",
+        "카페명": "맘스홀릭",
+        "상태": "보고서 기입 완료",
+    }])
+  elif role == "원장님 (로컬 지점)":
+    st.info(
+        "💡 원장님 전용 확인 링크 화면: 로그인 없이 해당 지점 원고에 대한 확인"
+        " 또는 수정 요청만 가능합니다."
+    )
+    report_df = pd.DataFrame(
+        [{"지점": "로컬 지점", "상태": "원장님 컨펌 대기중"}]
+    )
+  else:
+    report_df = pd.DataFrame([{
+        "지점": "유앤아이 강남점",
+        "발행일": "2026-06-07",
+        "카페명": "맘스홀릭",
+        "상태": "지점 담당자 확인 완료",
+    }])
+
   st.dataframe(report_df, use_container_width=True)
 
   csv_data = report_df.to_csv(index=False).encode("utf-8-sig")
