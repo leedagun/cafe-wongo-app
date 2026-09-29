@@ -16,20 +16,19 @@ if "preview_data" not in st.session_state:
 if "action_type" not in st.session_state:
   st.session_state.action_type = None
 if "user_role" not in st.session_state:
-  # 기본 접속자 역할을 '관리자'로 고정 (필요시 이 값을 "원고 작가" 등으로 변경하여 테스트 가능)
+  # 기본 고정 역할 (필요에 따라 변경 가능)
   st.session_state.user_role = "관리자"
 
 # =========================================================
-# 사이드바 메뉴 및 권한(역할) 고정 설정
+# 사이드바 메뉴 및 권한(역할) 고정 설정 (수정 불가 처리)
 # =========================================================
 st.sidebar.title("📌 통합 대시보드")
 st.sidebar.markdown("---")
 
 st.sidebar.markdown("🔒 **사용자 권한(역할)**")
-
-# selectbox 대신 텍스트로 고정하여 수정/지우기 방지
+# selectbox 대신 텍스트로 고정하여 사용자가 수정하지 못하도록 차단
 role = st.session_state.user_role
-st.sidebar.markdown(f"**현재 접속자 역할**: `{role}` (고정됨)")
+st.sidebar.markdown(f"**현재 접속자 역할**: `{role}`")
 
 st.sidebar.markdown("---")
 
