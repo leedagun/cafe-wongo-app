@@ -14,6 +14,8 @@ if "current_month" not in st.session_state:
   st.session_state.current_month = "2026년 10월"
 if "user_role" not in st.session_state:
   st.session_state.user_role = "관리자"
+if "eq_selected_branch" not in st.session_state:
+  st.session_state.eq_selected_branch = None  # 지점 클릭 상태 관리
 
 # =========================================================
 # 사이드바 메뉴 및 권한(역할) 설정
@@ -59,6 +61,9 @@ def menu_btn(label, target_menu):
       key=f"btn_{target_menu}",
   ):
     st.session_state.menu_option = target_menu
+    st.session_state.eq_selected_branch = (
+        None  # 메뉴 이동 시 지점 상세 초기화
+    )
     st.rerun()
 
 
@@ -119,7 +124,7 @@ elif role == "원장님 (로컬 지점)":
   menu_btn("📊 통합 작업 현황 보고서", "📊 통합 보고서")
 
 st.sidebar.markdown("---")
-st.sidebar.caption("🚀 마케팅 통합 관리 프로그램 v2.4")
+st.sidebar.caption("🚀 마케팅 통합 관리 프로그램 v2.5")
 
 menu_option = st.session_state.menu_option
 
@@ -158,53 +163,82 @@ if menu_option == "🏠 홈 (대시보드)":
 
 
 elif menu_option == "🏢 지점 및 장비 관리":
-  st.title("🏢 지점 및 보유 장비 관리")
-  st.markdown(
-      "지점 50개 기준 가나다순 정렬 및 실시간 검색을 지원하며, 지점을 선택하여"
-      " 장비 분류별 상세 내역을 관리합니다[cite: 13]."
-  )
+  # 지점 상세 페이지가 열려있는 경우
+  if st.session_state.eq_selected_branch is not None:
+    selected_b = st.session_state.eq_selected_branch
+    if st.button("⬅️ [목록으로 돌아가기]", type="secondary"):
+      st.session_state.eq_selected_branch = None
+      st.rerun()
 
-  # 검색 및 가나다순 지점 목록 뷰 추가
-  search_branch = st.text_input(
-      "🔍 지점명 검색 (예: '광' 입력 시 광교점, 광명점 등 즉시 필터링)", ""
-  )
+    st.title(f"🏥 [{selected_b}] 장비 보유 상세 페이지")
+    st.markdown(
+        f"**{selected_b}**의 분류별 보유 장비 현황 및 입고일 이력을 관리합니다"
+        "[cite: 13]."
+    )
 
-  sample_branches = ["강남점", "건대점", "경기광주점", "광교점", "광명점", "신촌점"]
-  filtered_branches = [
-      b for b in sample_branches if search_branch in b
-  ] or sample_branches
+    branch_eq_df = pd.DataFrame([
+        {
+            "분류": "리프팅",
+            "장비명": "울쎄라피 프라임",
+            "수량": 2,
+            "입고일": "2026-01-10",
+            "비고": "정품 장비 단독 사용",
+        },
+        {
+            "분류": "주사 시술",
+            "장비명": "영국산 보톡스",
+            "수량": 5,
+            "입고일": "2026-03-15",
+            "비고": "디스포트 명칭 언급금지 반영",
+        },
+        {
+            "분류": "색소",
+            "장비명": "피코플러스",
+            "수량": 1,
+            "입고일": "2026-05-20",
+            "비고": "이상 없음",
+        },
+    ])
+    st.data_editor(branch_eq_df, use_container_width=True)
 
-  st.markdown("📌 **지점 선택 목록 (가나다순)**")
-  cols = st.columns(3)
-  for idx, branch in enumerate(filtered_branches):
-    with cols[idx % 3]:
-      if st.button(f"🏥 {branch}", use_container_width=True):
-        st.session_state["selected_branch_detail"] = branch
+  else:
+    # 지점 목록 첫 화면 (가나다순 정렬 및 검색 기능)[cite: 13]
+    st.title("🏢 지점 및 보유 장비 관리")
+    st.markdown(
+        "지점 50개 기준 가나다순 정렬 및 실시간 검색을 지원합니다. 지점을"
+        " 클릭하면 새 페이지(상세 뷰)가 열리며 보유 장비를 확인할 수 있습니다"
+        "[cite: 13]."
+    )
 
-  # 선택된 지점 장비 상세 영역
-  current_selected = st.session_state.get(
-      "selected_branch_detail", "유앤아이 강남점"
-  )
-  st.markdown("---")
-  st.subheader(f"🛠️ [{current_selected}] 장비 분류별 상세 현황")
+    search_branch = st.text_input(
+        "🔍 지점명 검색 (예: '강남', '광' 입력 시 실시간 필터링)", ""
+    )
 
-  branch_eq_df = pd.DataFrame([
-      {
-          "분류": "리프팅",
-          "장비명": "울쎄라피 프라임",
-          "수량": 2,
-          "입고일": "2026-01-10",
-          "비고": "정품 장비 단독 사용",
-      },
-      {
-          "분류": "주사 시술",
-          "장비명": "영국산 보톡스",
-          "수량": 5,
-          "입고일": "2026-03-15",
-          "비고": "디스포트 명칭 언급금지 반영",
-      },
-  ])
-  st.data_editor(branch_eq_df, use_container_width=True)
+    sample_branches = [
+        "강남점",
+        "건대점",
+        "경기광주점",
+        "광교점",
+        "광명점",
+        "신촌점",
+        "대전점",
+        "배곧점",
+        "하남미사점",
+    ]
+    filtered_branches = [
+        b for b in sample_branches if search_branch in b
+    ] or sample_branches
+
+    st.markdown("📌 **지점 선택 목록 (클릭 시 상세 페이지 이동)**")
+    cols = st.columns(3)
+    for idx, branch in enumerate(filtered_branches):
+      with cols[idx % 3]:
+        # 지점 클릭 시 상세 페이지 세션 활성화 후 리런
+        if st.button(
+            f"🏥 {branch}", use_container_width=True, key=f"branch_btn_{branch}"
+        ):
+          st.session_state.eq_selected_branch = branch
+          st.rerun()
 
 
 elif menu_option == "☕ 카페 목록 관리":
