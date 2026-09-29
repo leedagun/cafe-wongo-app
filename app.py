@@ -142,7 +142,7 @@ if menu_option == "🏠 홈 (대시보드)":
   col_chk4.metric("AS 대기 건", "1건", "확인 필요")
 
   st.markdown("---")
-  st.subheader("📌 담당자별 카드 현황 (8명 기준)")
+  st.subheader("📌 담당자별 진행 현황")
   st.markdown(
       "지점 50개를 담당자 8명 기준으로 묶어 카드 형태로 진행률을 보여줍니다."
   )
