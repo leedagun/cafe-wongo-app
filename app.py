@@ -27,7 +27,7 @@ if st.sidebar.button("🔄 [다음 달 시작] 이월 및 틀 생성", use_conta
 
 st.sidebar.markdown("---")
 
-# 요청하신 사용자 권한(역할) 선택 영역 추가
+# 파일 안의 2차 구성안 권한 반영 (6가지 역할)[cite: 10]
 st.sidebar.markdown("🔒 **사용자 권한(역할)**")
 st.session_state.user_role = st.sidebar.selectbox(
     "현재 접속자 역할",
@@ -60,16 +60,61 @@ def menu_btn(label, target_menu):
 
 
 st.sidebar.markdown("📌 **메뉴 선택**")
-menu_btn("🏠 홈 (대시보드)", "🏠 홈 (대시보드)")
-menu_btn("🏢 지점 및 장비 관리", "🏢 지점 및 장비 관리")
-menu_btn("☕ 카페 목록 관리", "☕ 카페 목록 관리")
-menu_btn("📋 원고 보드 (작성·검수·컨펌)", "📋 원고 보드")
-menu_btn("💬 댓글 침투 관리", "💬 댓글 침투 관리")
-menu_btn("📝 단건 원고 작성", "📝 단건 원고 작성")
 
-if role == "실행사 (1곳)":
+# 권한별 보는 범위 및 할 수 있는 것에 따른 메뉴 제한 반영[cite: 10]
+if role == "관리자":
+  menu_btn("🏠 홈 (대시보드)", "🏠 홈 (대시보드)")
+  menu_btn("🏢 지점 및 장비 관리", "🏢 지점 및 장비 관리")
+  menu_btn("☕ 카페 목록 관리", "☕ 카페 목록 관리")
+  menu_btn("📋 원고 보드 (작성·검수·컨펌)", "📋 원고 보드")
+  menu_btn("💬 댓글 침투 관리", "💬 댓글 침투 관리")
+  menu_btn("📝 단건 원고 작성", "📝 단건 원고 작성")
   menu_btn("🚀 실행사 발행 및 AS 관리", "🚀 실행사 발행 및 AS 관리")
-else:
+  menu_btn("📊 통합 작업 현황 보고서", "📊 통합 보고서")
+
+elif role == "지점 담당자 (유앤아이·블루비뇨기과)":
+  menu_btn("🏠 홈 (대시보드)", "🏠 홈 (대시보드)")
+  menu_btn("🏢 지점 및 장비 관리", "🏢 지점 및 장비 관리")
+  menu_btn("📊 통합 작업 현황 보고서", "📊 통합 보고서")
+
+elif role == "원고 작가":
+  if st.session_state.menu_option in [
+      "🏠 홈 (대시보드)",
+      "🏢 지점 및 장비 관리",
+      "☕ 카페 목록 관리",
+      "💬 댓글 침투 관리",
+      "🚀 실행사 발행 및 AS 관리",
+      "📊 통합 보고서",
+  ]:
+    st.session_state.menu_option = "📋 원고 보드"
+  menu_btn("📋 원고 보드 (작성·검수·컨펌)", "📋 원고 보드")
+  menu_btn("📝 단건 원고 작성", "📝 단건 원고 작성")
+
+elif role == "게시판 담당":
+  if st.session_state.menu_option not in [
+      "🏠 홈 (대시보드)",
+      "📋 원고 보드",
+  ]:
+    st.session_state.menu_option = "🏠 홈 (대시보드)"
+  menu_btn("🏠 홈 (대시보드)", "🏠 홈 (대시보드)")
+  menu_btn("📋 원고 보드 (작성·검수·컨펌)", "📋 원고 보드")
+
+elif role == "실행사 (1곳)":
+  if st.session_state.menu_option not in [
+      "🏠 홈 (대시보드)",
+      "💬 댓글 침투 관리",
+      "🚀 실행사 발행 및 AS 관리",
+      "📊 통합 보고서",
+  ]:
+    st.session_state.menu_option = "🚀 실행사 발행 및 AS 관리"
+  menu_btn("🏠 홈 (대시보드)", "🏠 홈 (대시보드)")
+  menu_btn("💬 댓글 침투 관리", "💬 댓글 침투 관리")
+  menu_btn("🚀 실행사 발행 및 AS 관리", "🚀 실행사 발행 및 AS 관리")
+  menu_btn("📊 통합 작업 현황 보고서", "📊 통합 보고서")
+
+elif role == "원장님 (로컬 지점)":
+  if st.session_state.menu_option != "📊 통합 보고서":
+    st.session_state.menu_option = "📊 통합 보고서"
   menu_btn("📊 통합 작업 현황 보고서", "📊 통합 보고서")
 
 st.sidebar.markdown("---")
@@ -79,13 +124,13 @@ menu_option = st.session_state.menu_option
 
 
 # =========================================================
-# 화면 분기 및 렌더링
+# 화면 분기 및 렌더링 (역할별 보는 범위 적용)
 # =========================================================
 if menu_option == "🏠 홈 (대시보드)":
   st.title("🏠 마케팅 통합 관리 홈 (대시보드)")
   st.markdown(
-      f"현재 운영 월: **{st.session_state.current_month}** | 현재 접속 권한:"
-      f" **{role}**"
+      f"현재 운영 월: **{st.session_state.current_month}** | 현재 접속 역할:"
+      f" **{role}** (보는 범위: 내 담당만 보기 필터 적용)"
   )
 
   col1, col2, col3, col4 = st.columns(4)
@@ -122,10 +167,16 @@ if menu_option == "🏠 홈 (대시보드)":
 
 elif menu_option == "🏢 지점 및 장비 관리":
   st.title("🏢 지점 및 보유 장비 관리")
-  st.markdown(
-      "병원 구분(유앤아이/블루비뇨기과/로컬), 원고 재료 칸(장비 비고 규칙,"
-      " 금지 주제 등)을 관리합니다."
-  )
+  if role == "지점 담당자 (유앤아이·블루비뇨기과)":
+    st.info(
+        "💡 [지점 담당자 전용 범위] 담당 지점의 보유 장비 수정 및 월별 키워드"
+        " 입력이 가능합니다[cite: 10]."
+    )
+  else:
+    st.markdown(
+        "병원 구분(유앤아이/블루비뇨기과/로컬), 원고 재료 칸(장비 비고 규칙,"
+        " 금지 주제 등)을 관리합니다."
+    )
 
   branch_setting_df = pd.DataFrame([
       {
@@ -138,7 +189,7 @@ elif menu_option == "🏢 지점 및 장비 관리":
           "지점명": "블루비뇨기과 신촌점",
           "병원 구분": "블루비뇨기과",
           "보유 장비 / 재료": "I-MOVE 쇄석기",
-          "지점별 주의사항": "정관수술, 포경수술 등 수술은 진행하지 않음",
+          "지점별 주의사항": "정관수술, 포경수술 등 수술은 진행하지 않음[cite: 10]",
       },
   ])
   st.data_editor(branch_setting_df, use_container_width=True)
@@ -174,11 +225,17 @@ elif menu_option == "☕ 카페 목록 관리":
 
 elif menu_option == "📋 원고 보드":
   st.title("📋 통합 원고 보드 (작성·자동 검수·컨펌)")
-  st.markdown(
-      "시트 없이 프로그램 안에서 월별·지점별 20건 틀을 관리하고, 저장 시"
-      " 자동 검수(금칙어, 장비규칙, 지난 3개월 중복 검사)가 바로"
-      " 실행됩니다."
-  )
+  if role == "원고 작가":
+    st.info(
+        "💡 [원고 작가 전용 범위] 배정된 원고만 확인하고 작성 및 피드백 반영을"
+        " 수행합니다[cite: 10]."
+    )
+  else:
+    st.markdown(
+        "시트 없이 프로그램 안에서 월별·지점별 20건 틀을 관리하고, 저장 시"
+        " 자동 검수(금칙어, 장비규칙, 지난 3개월 중복 검사)가 바로"
+        " 실행됩니다."
+    )
 
   col_s1, col_s2 = st.columns(2)
   with col_s1:
@@ -294,10 +351,17 @@ elif menu_option == "📝 단건 원고 작성":
 
 elif menu_option == "🚀 실행사 발행 및 AS 관리":
   st.title("🚀 실행사 발행 및 AS / 계정 사용 관리")
-  st.markdown(
-      "카페 침투·댓글 침투 발행, 계정 사용 체크(10일/40개 제한), 그리고 발행 후"
-      " AS(삭제·댓글 미완료·조회수 부족)를 관리합니다."
-  )
+  if role == "실행사 (1곳)":
+    st.warning(
+        "🔒 [실행사 전용 범위] 완료된 원고 및 자기가 기입한 보고서만 보이며,"
+        " 발행 처리, 보고서 기입, 수정 요청 처리, 이슈 보고가 가능합니다"
+        "[cite: 10]."
+    )
+  else:
+    st.markdown(
+        "카페 침투·댓글 침투 발행, 계정 사용 체크(10일/40개 제한), 그리고 발행 후"
+        " AS(삭제·댓글 미완료·조회수 부족)를 관리합니다."
+    )
 
   tab_ex1, tab_ex2, tab_ex3 = st.tabs(
       ["☕ 카페/댓글 발행", "🔒 계정 사용 체크", "🛠️ 발행 후 AS 관리"]
@@ -315,7 +379,7 @@ elif menu_option == "🚀 실행사 발행 및 AS 관리":
     }])
     st.data_editor(pub_df, use_container_width=True)
     if st.button("📤 지점 단위 '기입 완료 확인 요청' 전송"):
-      st.success("✨ 지점 담당자에게 확인 요청이 전달되었습니다!")
+      st.success("✨ 지점 담당자에게 확인 요청이 전달되었습니다.")
 
   with tab_ex2:
     st.subheader("🔒 계정 사용 가능 여부 자동 체크")
@@ -347,10 +411,21 @@ elif menu_option == "🚀 실행사 발행 및 AS 관리":
 
 elif menu_option == "📊 통합 보고서":
   st.title("📊 통합 작업 현황 보고서 및 컨펌 흐름")
-  st.markdown(
-      "실행사 기입 ➔ 관리자 1차 확인 ➔ 지점 담당자 확인(수정 요청 바로"
-      " 전달) ➔ 관리자 최종본 확정 흐름을 관리합니다."
-  )
+  if role == "원장님 (로컬 지점)":
+    st.info(
+        "💡 [원장님 전용 범위] 해당 지점 원고만 확인하며, 로그인 없는 확인 링크로"
+        " 확인 또는 수정 요청을 진행합니다[cite: 10]."
+    )
+  elif role == "지점 담당자 (유앤아이·블루비뇨기과)":
+    st.info(
+        "💡 [지점 담당자 전용 범위] 담당 지점의 보고서 확인과 수정 요청을"
+        " 처리합니다[cite: 10]."
+    )
+  else:
+    st.markdown(
+        "실행사 기입 ➔ 관리자 1차 확인 ➔ 지점 담당자 확인(수정 요청 바로"
+        " 전달) ➔ 관리자 최종본 확정 흐름을 관리합니다."
+    )
 
   report_main_df = pd.DataFrame([
       {
