@@ -3,7 +3,7 @@
 
 ■ 이 파일 하나만 붙여넣고 실행하면 됩니다:   streamlit run app.py
 ■ 필요한 패키지:  pip install streamlit pandas openpyxl requests anthropic
-■ 처음 로그인:    admin / admin1234   (데모 계정 kim·lee·writer1·board·exec — 비밀번호 1234)
+■ 테스트 모드:    로그인 없이 사이드바 맨 위에서 역할(사람)을 골라 접속합니다.
 ■ 데이터는 이 파일 옆 data/app.db 에 저장됩니다.
 ■ AI 초안·단건 작성을 쓰려면: .streamlit/secrets.toml 에 ANTHROPIC_API_KEY = "..." 를 넣고,
   이 파일 옆 skills/<스킬이름>/SKILL.md 에 스킬 파일을 두세요(없으면 스킬 없이 작성).
@@ -5594,27 +5594,20 @@ mark {background:#fff2a8; padding:0 2px; border-radius:3px;}
 """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 로그인 (실행사 비공개 원칙 때문에 1단계부터 계정별 로그인)
+# 테스트 모드: 로그인 없이 사이드바에서 사람(역할)을 골라 바로 접속
+# (운영 전환 시 계정별 로그인을 다시 붙이면 됩니다)
 # ─────────────────────────────────────────────────────────────────────────────
-if "user" not in st.session_state:
-    st.session_state.user = None
-
-if not st.session_state.user:
-    c = st.columns([1, 1.2, 1])[1]
-    with c:
-        st.title("🚀 마케팅 통합 관리")
-        with st.form("login"):
-            u = st.text_input("아이디")
-            p = st.text_input("비밀번호", type="password")
-            if st.form_submit_button("로그인", type="primary", width="stretch"):
-                row = q1("SELECT * FROM users WHERE username=? AND active=1", (u.strip(),))
-                if row and check_pw(p, row["pw"]):
-                    st.session_state.user = {k: row[k] for k in ("id", "username", "name", "role")}
-                    st.rerun()
-                else:
-                    st.error("아이디 또는 비밀번호가 맞지 않습니다.")
-        st.caption("처음 설치: admin / admin1234 · 데모 계정 kim·lee(지점 담당), writer1(작가), board(게시판), exec — 비밀번호 1234")
-    st.stop()
+_people = q("SELECT id, username, name, role FROM users WHERE active=1 ORDER BY CASE role "
+            "WHEN '관리자' THEN 0 WHEN '지점 담당자' THEN 1 WHEN '원고 작가' THEN 2 WHEN '게시판 담당' THEN 3 ELSE 4 END, name")
+_labels = [f"{p['role']} · {p['name']}" for p in _people]
+_cur = st.session_state.get("user")
+_idx = next((i for i, p in enumerate(_people) if _cur and p["id"] == _cur["id"]), 0)
+st.sidebar.markdown("🧪 **테스트 모드** — 접속할 사람 선택")
+_pick = st.sidebar.selectbox("접속 역할", _labels, index=_idx, key="test_user", label_visibility="collapsed")
+_sel = _people[_labels.index(_pick)]
+if not _cur or _cur["id"] != _sel["id"]:
+    st.session_state.user = dict(_sel)
+    st.session_state.pop("menu", None)
 
 user = st.session_state.user
 role = user["role"]
@@ -5683,9 +5676,6 @@ for key, label, _ in allowed:
             st.session_state.pop(k, None)
         st.rerun()
 sb.markdown("---")
-if sb.button("로그아웃", width="stretch"):
-    st.session_state.clear()
-    st.rerun()
 sb.caption("마케팅 통합 관리 v3.0")
 
 # ─────────────────────────────────────────────────────────────────────────────
